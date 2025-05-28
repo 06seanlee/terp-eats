@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Choose a Meal</title>
+</head>
+<body>
+    <h1>{{ meal.capitalize() }} Menu</h1>
+    <form method="POST">
+        {% for food in foods %}
+            <div>
+                <label>
+                    <input type="checkbox" name="food_id" value="{{ food[0] }}"> {{ food[1] }}
+                </label>
+            </div>
+        {% endfor %}
+    <input type="submit" value="Log Selected Foods">
+</form>
+    <a href="{{ url_for('login') }}">Login</a>
+</body>
+</html>
+

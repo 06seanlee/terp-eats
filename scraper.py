@@ -252,6 +252,13 @@ def get_user_by_username(username):
         cursor.execute(query, (username,))
         return cursor.fetchone()  # returns (id, username, email, created_at) or None
 
+def get_user_by_id(id):
+    query = "SELECT id, username, email, created_at FROM users WHERE id = ?"
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (id,))
+        return cursor.fetchone()
+
 def remove_user(username):
     query = "DELETE FROM users WHERE username = ?"
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -284,6 +291,16 @@ def email_exists(email):
         cursor = conn.cursor()
         cursor.execute("SELECT 1 FROM users WHERE email = ?", (email,))
         return cursor.fetchone() is not None
+
+def validate_account(username, email):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT email FROM users WHERE username = ?", (username,))
+        row = cursor.fetchone()
+
+        if row is None:
+            return False
+        return row[0] == email
 
 
 def set_macro_goals(user_id, calories, protein, carbs, fat):

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Choose a Meal</title>
+</head>
+<body>
+    <h1>Choose a meal type!</h1>
+    <form method="POST">
+        <label><input type="radio" name="meal" value="breakfast"> Breakfast</input></label>
+        <label><input type="radio" name="meal" value="lunch"> Lunch</input></label>
+        <label><input type="radio" name="meal" value="dinner"> Dinner</input></label>
+        <input type="submit" value="Submit">
+    </form>
+
+    <a href="{{ url_for('login') }}">Login</a>
+</body>
+</html>
