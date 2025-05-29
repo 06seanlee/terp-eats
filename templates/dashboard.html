@@ -6,7 +6,17 @@
 </head>
 <body>
     <h1>Welcome {{ username }}</h1>
+    {% if macro_goals %}
+        <h2>Your Macro Goals: </h2>
+        <div>Calories Goal: {{ macro_goals[0] }} cal</div>
+        <div>Protein Goal: {{ macro_goals[1] }}g</div>
+        <div>Carbs Goal: {{ macro_goals[2] }}g</div>
+        <div>Fat Goal: {{ macro_goals[3] }}g</div><br>
+    {% else %}
+        <h2>You have no macro goals.</h2>
+    {% endif %}
 
-    <a href="{{ url_for('choose_meal') }}">Log Food</a>
+    <a href="{{ url_for('choose_meal') }}">Log Food</a><br>
+    <a href="{{ url_for('set_goals') }}">Set Macro Goals</a>
 </body>
 </html>

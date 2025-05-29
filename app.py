@@ -41,8 +41,10 @@ def dashboard():
     user_id = session['user_id']
     user = scraper.get_user_by_id(user_id)
     username = user[1]
+    macro_goals = scraper.get_macro_goals(user_id)
+
     
-    return render_template('dashboard.html', username=username)
+    return render_template('dashboard.html', username=username, macro_goals=macro_goals)
 
 @app.route('/choose_meal', methods=['GET','POST'])
 def choose_meal():
@@ -65,8 +67,9 @@ def select_foods(meal):
         user_id = session['user_id']
 
         for food in selected_foods:
-            # GET QUANTITY LATER
-            scraper.log_food(user_id, food, 1, "5/19/2025", meal) # HARD CODED DATE, CHANGE LATER AND QUANTITY CHANGE
+            quantity = request.form.get(f'quantity_{food}', type=int)
+            if quantity and quantity > 0:
+                scraper.log_food(user_id, food, quantity, "5/19/2025", meal) # HARD CODED DATE, CHANGE LATER AND QUANTITY CHANGE
         
         return redirect(url_for('dashboard'))
 
@@ -74,6 +77,22 @@ def select_foods(meal):
 
     return render_template('select_foods.html', meal=meal, foods=foods)
          
+@app.route('/set_goals', methods=['GET','POST'])
+def set_goals():
+    if request.method == 'POST':
+        calorie_goal = request.form['calorie_goal']
+        protein_goal = request.form['protein_goal']
+        carb_goal = request.form['carb_goal']
+        fat_goal = request.form['fat_goal']
+        user_id = session['user_id']
+
+        success = scraper.set_macro_goals(user_id, calorie_goal, protein_goal, carb_goal, fat_goal)
+        if success:
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('set_goals.html')
+        
+    return render_template('set_goals.html')
 
 
 if __name__ == "__main__":

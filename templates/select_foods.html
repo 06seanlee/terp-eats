@@ -12,10 +12,11 @@
                 <label>
                     <input type="checkbox" name="food_id" value="{{ food[0] }}"> {{ food[1] }}
                 </label>
+                <input type="number" name="quantity_{{ food[0] }}" min="1" value="1" style="width: 60px">
             </div>
         {% endfor %}
     <input type="submit" value="Log Selected Foods">
-</form>
+    </form>
     <a href="{{ url_for('login') }}">Login</a>
 </body>
 </html>

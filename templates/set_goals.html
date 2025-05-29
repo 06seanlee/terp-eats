@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Set Macro Goals</title>
+</head>
+<body>
+    <h1>Set Your Macro Goals!</h1>
+    <form method="POST">
+        <label>Calorie Goal: </label>
+        <input type="number" name="calorie_goal"> cal<br>
+        <label>Protein Goal: </label>
+        <input type="number" name="protein_goal">g<br>
+        <label>Carb Goal: </label>
+        <input type="number" name="carb_goal">g<br>
+        <label>Fat Goal: </label>
+        <input type="number" name="fat_goal">g<br>
+        
+        <input type="submit" value="Set Goal">
+    </form>
+    <a href="{{ url_for('login') }}">Login</a>
+</body>
+</html>
+
