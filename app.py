@@ -6,7 +6,7 @@ app.secret_key = "secret_key" # hardcoded, change later
 
 @app.route('/')
 def home():
-    session.clear() # requires log in everytime. REMOVE LATER
+    # session.clear() # requires log in everytime. REMOVE LATER
     return redirect(url_for('dashboard')) if 'user_id' in session else redirect(url_for('login'))
 
 @app.route('/login', methods=['GET','POST'])
@@ -18,7 +18,6 @@ def login():
 
         if valid_account:
             user_id = scraper.get_user_by_username(username)[0]
-            print(user_id)
             session['user_id'] = user_id
             return redirect(url_for('dashboard'))
         return redirect(url_for('login'))
@@ -42,9 +41,10 @@ def dashboard():
     user = scraper.get_user_by_id(user_id)
     username = user[1]
     macro_goals = scraper.get_macro_goals(user_id)
-
+    daily_macros = scraper.get_daily_macros(user_id, "5/19/2025") # HARD CODED DATE
+    remaining_macros = scraper.get_remaining_macros(user_id, "5/19/2025") # HARD CODED DATE
     
-    return render_template('dashboard.html', username=username, macro_goals=macro_goals)
+    return render_template('dashboard.html', username=username, macro_goals=macro_goals, daily_macros=daily_macros, remaining_macros=remaining_macros)
 
 @app.route('/choose_meal', methods=['GET','POST'])
 def choose_meal():
@@ -94,6 +94,33 @@ def set_goals():
         
     return render_template('set_goals.html')
 
+@app.route('/view_logs', methods=['GET','POST'])
+def view_logs():
+    user_id = session['user_id']
+    date = "5/19/2025" # HARD CODED DATE
+
+    food_logs, total = scraper.get_daily_macros(user_id, date)
+    return render_template('view_logs.html', food_logs=food_logs, date=date)
+
+@app.route('/modify_log', methods=['POST'])
+def modify_log():
+    log_id = request.form['log_id']
+    action = request.form['action']
+    date = "5/19/2025" # HARD CODED DATE
+
+    if action == 'delete':
+        scraper.remove_log_by_id(log_id)
+    elif action == 'update':
+        quantity = float(request.form['quantity'])
+        meal = request.form['meal']
+        scraper.update_log(log_id, quantity, date, meal)
+
+    return redirect(url_for('view_logs'))
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True)

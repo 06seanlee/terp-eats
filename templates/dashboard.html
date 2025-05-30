@@ -16,7 +16,30 @@
         <h2>You have no macro goals.</h2>
     {% endif %}
 
+    {% if daily_macros %}
+        <h2>Today's Macros: </h2>
+        <div>Calories Consumed: {{ daily_macros[1]['calories']}} cal</div>
+        <div>Protein Consumed: {{ daily_macros[1]['protein']}} cal</div>
+        <div>Carbs Consumed: {{ daily_macros[1]['carbs']}} cal</div>
+        <div>Fat Consumed: {{ daily_macros[1]['fat']}} cal</div>
+    {% else %}
+        <h2>No food consumed today</h2>
+    {% endif %}
+
+    {% if remaining_macros %}
+        <h2>Your Remaining Macros: </h2>
+        <div>Remaining Calories: {{ remaining_macros["calories_remaining"] }} cal</div>
+        <div>Remaining Protein: {{ remaining_macros["protein_remaining"] }}g</div>
+        <div>Remaining Carbs: {{ remaining_macros["carbs_remaining"] }}g</div>
+        <div>Remaining Fat: {{ remaining_macros["fat_remaining"] }}g</div><br>
+    {% else %}
+        <h2>You have no remaining macros.</h2>
+    {% endif %}
+
     <a href="{{ url_for('choose_meal') }}">Log Food</a><br>
-    <a href="{{ url_for('set_goals') }}">Set Macro Goals</a>
+    <a href="{{ url_for('set_goals') }}">Set Macro Goals</a><br>
+    <a href="{{ url_for('view_logs') }}">View Food Logs</a><br>
+    <a href="{{ url_for('logout') }}">Log Out</a>
+    
 </body>
 </html>

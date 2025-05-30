@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Food Logs</title>
+</head>
+<body>
+    <h1>All Food Logs for {{ date }}</h1>
+    {% for food in food_logs %}
+        <form method="POST" action="{{ url_for('modify_log') }}">
+            <input type="hidden" name="log_id" value="{{ food.log_id }}">
+            <p><strong>{{ food.name }}</strong> - {{ food.calories }} cal, {{ food.protein }}g protein, {{ food.carbs }}g carbs, {{ food.fat }}g fat</p>
+            <label>Quantity: <input type="number" name="quantity" value="{{ food.quantity }}" required></label>
+            <label>Meal:
+                <select name="meal">
+                    <option value="Breakfast" {% if food.meal == 'Breakfast' %}selected{% endif %}>Breakfast</option>
+                    <option value="Lunch" {% if food.meal == 'Lunch' %}selected{% endif %}>Lunch</option>
+                    <option value="Dinner" {% if food.meal == 'Dinner' %}selected{% endif %}>Dinner</option>
+                </select>
+            </label>
+            <button type="submit" name="action" value="update">Update</button>
+            <button type="submit" name="action" value="delete">Delete</button>
+        </form>
+        <hr>
+    {% endfor %}
+
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a><br>
+    <a href="{{ url_for('logout') }}">Log Out</a>
+</body>
+</html>
