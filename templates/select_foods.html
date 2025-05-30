@@ -7,13 +7,16 @@
 <body>
     <h1>{{ meal.capitalize() }} Menu</h1>
     <form method="POST">
-        {% for food in foods %}
-            <div>
-                <label>
-                    <input type="checkbox" name="food_id" value="{{ food[0] }}"> {{ food[1] }}
-                </label>
-                <input type="number" name="quantity_{{ food[0] }}" min="1" value="1" style="width: 60px">
-            </div>
+        {% for station, station_foods in foods.items() %}
+            <h2>{{ station }}</h2>
+            {% for food in station_foods%}
+                <div>
+                    <label>
+                        <input type="checkbox" name="food_id" value="{{ food[0] }}"> {{ food[1] }}
+                    </label>
+                    <input type="number" name="quantity_{{ food[0] }}" min="1" value="1" style="width: 60px">
+                </div>
+            {% endfor %}
         {% endfor %}
     <input type="submit" value="Log Selected Foods">
     </form>

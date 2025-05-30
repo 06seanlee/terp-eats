@@ -223,12 +223,20 @@ def get_food_name_by_id(food_id):
         return result[0] if result else None
 
 def get_foods_by_meal(meal_type, date, dining_hall):
-    query = "SELECT id, name FROM foods WHERE meal = ? AND date = ? AND dining_hall = ?"
+    query = "SELECT id, name, station FROM foods WHERE meal = ? AND date = ? AND dining_hall = ?"
 
     with sqlite3.connect("macro_tracker.db") as conn:
         cursor = conn.cursor()
         cursor.execute(query, (meal_type, date, dining_hall))
-        return cursor.fetchall()
+        results = cursor.fetchall()
+
+    grouped = {}
+    for food_id, name, station in results:
+        if station not in grouped:
+            grouped[station] = []
+        grouped[station].append((food_id, name))
+    
+    return grouped
 
 
 # user logic
