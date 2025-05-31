@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 BASE_URL = "https://nutrition.umd.edu/"
 DINING_HALL_ID_DICT = {
@@ -47,7 +50,8 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
-            email TEXT,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL, 
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         """)
@@ -176,6 +180,9 @@ def insert_foods_and_macros(foods):
         conn.execute('PRAGMA foreign_keys = ON')
         cursor = conn.cursor()
 
+        urls_to_fetch = []
+        food_url_map = {}
+
         for food in foods:
             # Try inserting the food
             try:
@@ -197,13 +204,32 @@ def insert_foods_and_macros(foods):
 
             if row:
                 food_id = row[0]
-                macros = get_macros(food["url"])
+                urls_to_fetch.append(food["url"])
+                food_url_map[food["url"]] = food_id
 
+    print(f"Fetching {len(urls_to_fetch)} macros concurrently.")
+
+    results = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_url = {executor.submit(get_macros, url): url for url in urls_to_fetch}
+        for future in as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                macro_data = future.result()
+                macro_data["food_id"] = food_url_map[url]
+                results.append(macro_data)
+            except Exception as e:
+                print(f"Error fetching {url}: {e}")
+    
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        for macros in results:
+            try:
                 cursor.execute("""
                     INSERT INTO macros (food_id, protein, carbs, fat, calories, serving_size)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (
-                    food_id,
+                    macros["food_id"],
                     macros.get("protein", 0.0),
                     macros.get("carbs", 0.0),
                     macros.get("fat", 0.0),
@@ -211,9 +237,10 @@ def insert_foods_and_macros(foods):
                     macros.get("serving_size", '')
                 ))
                 conn.commit()
-                print(f"Inserted macros for food ID {food_id}: {macros['name']}")
-            else:
-                print(f"Macros already exist or food not found for URL: {food['url']}")
+                print(f"Inserted macros for food ID {macros['food_id']}: {macros['name']}")
+            except sqlite3.IntegrityError:
+                print(f"Duplicate macros for food ID {macros['food_id']}, skipping insert.")
+
         
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -223,7 +250,12 @@ def get_food_name_by_id(food_id):
         return result[0] if result else None
 
 def get_foods_by_meal(meal_type, date, dining_hall):
-    query = "SELECT id, name, station FROM foods WHERE meal = ? AND date = ? AND dining_hall = ?"
+    query = """
+        SELECT f.id, f.name, f.station, m.protein, m.carbs, m.fat, m.calories
+        FROM foods f
+        JOIN macros m ON f.id = m.food_id
+        WHERE f.meal = ? AND f.date = ? AND f.dining_hall = ?
+    """
 
     with sqlite3.connect("macro_tracker.db") as conn:
         cursor = conn.cursor()
@@ -231,22 +263,31 @@ def get_foods_by_meal(meal_type, date, dining_hall):
         results = cursor.fetchall()
 
     grouped = {}
-    for food_id, name, station in results:
+    for row in results:
+        food_id, name, station, protein, carbs, fat, calories = row
         if station not in grouped:
             grouped[station] = []
-        grouped[station].append((food_id, name))
+        grouped[station].append({
+            'id': food_id,
+            'name': name,
+            'protein': protein,
+            'carbs': carbs,
+            'fat': fat,
+            'calories': calories
+        })
     
     return grouped
 
 
+
 # user logic
-def add_user(username, email):
-    query = "INSERT INTO users (username, email) VALUES (?, ?)"
+def add_user(username, email, password):
+    query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 
     try:
         with sqlite3.connect("macro_tracker.db") as conn:
             cursor = conn.cursor()
-            cursor.execute(query, (username, email))
+            cursor.execute(query, (username, email, password))
             conn.commit()
             return cursor.lastrowid  # return new user's ID
     except sqlite3.IntegrityError:
@@ -300,15 +341,17 @@ def email_exists(email):
         cursor.execute("SELECT 1 FROM users WHERE email = ?", (email,))
         return cursor.fetchone() is not None
 
-def validate_account(username, email):
+def validate_account(username, email, password):
     with sqlite3.connect("macro_tracker.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT email FROM users WHERE username = ?", (username,))
+        cursor.execute("SELECT password FROM users WHERE username = ? AND email = ?", (username, email))
         row = cursor.fetchone()
 
         if row is None:
             return False
-        return row[0] == email
+        
+        stored_password = row[0]
+        return check_password_hash(stored_password, password)
 
 
 def set_macro_goals(user_id, calories, protein, carbs, fat):
@@ -646,5 +689,7 @@ if __name__ == "__main__":
     user = welcome()
     user_id = user[0]
     cli_main()
+    # urls = get_all_urls("5/19/2025", "South Campus")
+    # insert_foods_and_macros(urls)
 
     

@@ -12,9 +12,12 @@
             {% for food in station_foods%}
                 <div>
                     <label>
-                        <input type="checkbox" name="food_id" value="{{ food[0] }}"> {{ food[1] }}
+                        <input type="checkbox" name="food_id" value="{{ food.id }}"> {{ food.name }}
                     </label>
-                    <input type="number" name="quantity_{{ food[0] }}" min="1" value="1" style="width: 60px">
+                    <input type="number" name="quantity_{{ food.id }}" min="1" value="1" style="width: 60px">
+                    <div>
+                        Protein: {{ food.protein }}g | Carbs: {{ food.carbs }}g | Fat: {{ food.fat }}g | Calories: {{ food.calories }}
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}

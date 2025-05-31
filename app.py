@@ -1,4 +1,6 @@
 from flask import Flask, render_template, redirect, session, request, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+
 import scraper
 
 app = Flask(__name__)
@@ -7,28 +9,32 @@ app.secret_key = "secret_key" # hardcoded, change later
 @app.route('/')
 def home():
     # session.clear() # requires log in everytime. REMOVE LATER
-    return redirect(url_for('dashboard')) if 'user_id' in session else redirect(url_for('login'))
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
-        valid_account = scraper.validate_account(username, email)
+        password = request.form['password']
+        valid_account = scraper.validate_account(username, email, password)
 
         if valid_account:
             user_id = scraper.get_user_by_username(username)[0]
             session['user_id'] = user_id
             return redirect(url_for('dashboard'))
         return redirect(url_for('login'))
-    return render_template(('login.html'))
+    return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
-        user_id = scraper.add_user(username, email)
+        plain_password = request.form['password']
+        hashed_password = generate_password_hash(plain_password)
+
+        user_id = scraper.add_user(username, email, hashed_password)
         return redirect(url_for('login')) if user_id else "Username taken."
     return render_template('register.html')
 
