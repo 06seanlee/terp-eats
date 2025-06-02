@@ -2,7 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from datetime import date
 
 
 BASE_URL = "https://nutrition.umd.edu/"
@@ -84,6 +85,38 @@ def create_tables():
 
 
 # menu logic
+def get_formatted_date():
+    today = date.today()
+    formatted_date = f"{today.month}/{today.day}/{today.year}"
+    return formatted_date
+
+def get_today_menu_url():
+    date = get_formatted_date()
+    dining_hall = "South Campus"
+    return f"{BASE_URL}?locationNum={DINING_HALL_ID_DICT[dining_hall]}&dtdate={date}"
+
+def is_valid_menu(soup):
+    text = soup.find("div", class_="tab-content")
+    if not text:
+        return False
+    return True
+
+def scrape_if_valid():
+    url = get_today_menu_url()
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    if is_valid_menu(soup):
+        print("Scraping menu.")
+        date = get_formatted_date()
+        print(date)
+        urls = get_all_urls(date, "South Campus") # HARD CODED for only south for now
+        insert_foods_and_macros(urls)
+    else:
+        print("Invalid menu.")
+
+
+
 def get_all_urls(date, dining_hall):
     URL = f"{BASE_URL}?locationNum={DINING_HALL_ID_DICT[dining_hall]}&dtdate={date}"
     result = requests.get(URL)
@@ -686,10 +719,10 @@ def cli_main():
             print("Invalid input.")
 
 if __name__ == "__main__":
-    user = welcome()
-    user_id = user[0]
-    cli_main()
+    # user = welcome()
+    # user_id = user[0]
+    # cli_main()
     # urls = get_all_urls("5/19/2025", "South Campus")
     # insert_foods_and_macros(urls)
 
-    
+    scrape_if_valid()
