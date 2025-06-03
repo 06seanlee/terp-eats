@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, session, request, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 
 import scraper
 
@@ -35,7 +35,7 @@ def register():
         hashed_password = generate_password_hash(plain_password)
 
         user_id = scraper.add_user(username, email, hashed_password)
-        return redirect(url_for('login')) if user_id else "Username taken."
+        return redirect(url_for('set_goals')) if user_id else redirect(url_for('register'))
     return render_template('register.html')
 
 @app.route('/dashboard')
@@ -44,13 +44,18 @@ def dashboard():
         return render_template(url_for('login'))
     
     user_id = session['user_id']
+    macro_goals = scraper.get_macro_goals(user_id)
+    if not macro_goals:
+        return redirect(url_for('set_goals'))
+    
+    user_id = session['user_id']
     user = scraper.get_user_by_id(user_id)
     username = user[1]
     macro_goals = scraper.get_macro_goals(user_id)
-    daily_macros = scraper.get_daily_macros(user_id, "5/19/2025") # HARD CODED DATE
+    total = scraper.get_daily_macros(user_id, "5/19/2025", False) # HARD CODED DATE
     remaining_macros = scraper.get_remaining_macros(user_id, "5/19/2025") # HARD CODED DATE
     
-    return render_template('dashboard.html', username=username, macro_goals=macro_goals, daily_macros=daily_macros, remaining_macros=remaining_macros)
+    return render_template('dashboard.html', username=username, macro_goals=macro_goals, daily_total=total, remaining_macros=remaining_macros)
 
 @app.route('/choose_meal', methods=['GET','POST'])
 def choose_meal():

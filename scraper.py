@@ -389,6 +389,15 @@ def validate_account(username, email, password):
 
 def set_macro_goals(user_id, calories, protein, carbs, fat):
     try:
+        values = [int(calories), int(protein), int(carbs), int(fat)]
+    except ValueError:
+        return False 
+
+    if not all(num > 0 for num in values):
+        return False
+    
+
+    try:
         with sqlite3.connect("macro_tracker.db") as conn:
             cursor = conn.cursor()
             cursor.execute("""
