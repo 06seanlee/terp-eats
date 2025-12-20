@@ -1,10 +1,16 @@
 from flask import Flask, render_template, redirect, session, request, url_for
 from werkzeug.security import generate_password_hash
+import os
+from dotenv import load_dotenv
 
 import scraper
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "secret_key" # hardcoded, change later
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("FLASK_SECRET_KEY not set")
 
 @app.route('/')
 def home():
@@ -35,7 +41,12 @@ def register():
         hashed_password = generate_password_hash(plain_password)
 
         user_id = scraper.add_user(username, email, hashed_password)
-        return redirect(url_for('set_goals')) if user_id else redirect(url_for('register'))
+        if user_id:
+            session['user_id'] = user_id
+            session['new_user'] = True  # Flag this session as a new user
+            return redirect(url_for('set_goals'))
+        else:
+            return redirect(url_for('register'))
     return render_template('register.html')
 
 @app.route('/dashboard')
@@ -48,14 +59,17 @@ def dashboard():
     if not macro_goals:
         return redirect(url_for('set_goals'))
     
+    date = "5/19/2025" # HARD CODED DATE
     user_id = session['user_id']
     user = scraper.get_user_by_id(user_id)
     username = user[1]
     macro_goals = scraper.get_macro_goals(user_id)
-    total = scraper.get_daily_macros(user_id, "5/19/2025", False) # HARD CODED DATE
-    remaining_macros = scraper.get_remaining_macros(user_id, "5/19/2025") # HARD CODED DATE
+    total = scraper.get_daily_macros(user_id, date, False) 
+    remaining_macros = scraper.get_remaining_macros(user_id, date)
+
+    food_logs, trash = scraper.get_daily_macros(user_id, date)
     
-    return render_template('dashboard.html', username=username, macro_goals=macro_goals, daily_total=total, remaining_macros=remaining_macros)
+    return render_template('dashboard.html', username=username, macro_goals=macro_goals, daily_total=total, remaining_macros=remaining_macros, food_logs=food_logs)
 
 @app.route('/choose_meal', methods=['GET','POST'])
 def choose_meal():
@@ -93,17 +107,21 @@ def set_goals():
     if request.method == 'POST':
         calorie_goal = request.form['calorie_goal']
         protein_goal = request.form['protein_goal']
-        carb_goal = request.form['carb_goal']
-        fat_goal = request.form['fat_goal']
+        remaining_cals = float(calorie_goal) - (float(protein_goal) * 4)
+        carb_goal = round((remaining_cals * 0.5) / 4, 1)
+        fat_goal = round((remaining_cals * 0.5) / 9, 1)
+        
         user_id = session['user_id']
+        
 
         success = scraper.set_macro_goals(user_id, calorie_goal, protein_goal, carb_goal, fat_goal)
         if success:
+            session.pop('new_user', None)
             return redirect(url_for('dashboard'))
         else:
-            return render_template('set_goals.html')
+            return render_template('set_goals.html', is_new_user=session.get('new_user', False))
         
-    return render_template('set_goals.html')
+    return render_template('set_goals.html', is_new_user=session.get('new_user', False))
 
 @app.route('/view_logs', methods=['GET','POST'])
 def view_logs():
@@ -123,15 +141,16 @@ def modify_log():
         scraper.remove_log_by_id(log_id)
     elif action == 'update':
         quantity = float(request.form['quantity'])
-        meal = request.form['meal']
-        scraper.update_log(log_id, quantity, date, meal)
+        if (quantity < 0):
+            quantity = 1
+        scraper.update_log(log_id, quantity, date)
 
     return redirect(url_for('view_logs'))
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(debug=True)

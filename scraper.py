@@ -126,6 +126,10 @@ def get_all_urls(date, dining_hall):
 
     for meal_type, div_id in meal_id_map.items():
         container = soup.find(id=div_id)
+
+        if not container:
+            print(f"No menu for {meal_type} on {date} at {dining_hall}")
+            continue
         
         cards = container.find_all(class_="card")
         for card in cards:
@@ -133,6 +137,9 @@ def get_all_urls(date, dining_hall):
 
             for item in card.find_all(class_="menu-item-row"):
                 food_item = item.find('a', class_="menu-item-name", href=True)
+                if not food_item:
+                    print(f"Couldn't find food item")
+                    continue
                 food_name = food_item.text.strip()
                 food_url = BASE_URL + food_item['href']
 
@@ -562,16 +569,16 @@ def remove_log_by_date(date):
 
     conn.commit()
 
-def update_log(log_id, quantity, date, meal):
+def update_log(log_id, quantity, date):
     with sqlite3.connect("macro_tracker.db") as conn:
         conn.execute('PRAGMA foreign_keys = ON')
         cursor = conn.cursor()
 
         cursor.execute("""
             UPDATE logs 
-            SET quantity = ?, date = ?, meal = ?
+            SET quantity = ?, date = ?
             WHERE id = ?
-        """, (quantity, date, meal, log_id))
+        """, (quantity, date, log_id))
 
     conn.commit()
 
