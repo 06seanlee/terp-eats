@@ -18,7 +18,7 @@ meal_id_map = {
     "dinner": "pane-3"
 }
 
-# creates sqlite db (one time use)
+# creates sqlite db (one time use) (DOESN'T HAVE USER, MACRO_GOALS, AND LOGS YET)
 def create_tables():
     with sqlite3.connect('macro_tracker.db') as conn:
         conn.execute('PRAGMA foreign_keys = ON')
@@ -90,6 +90,8 @@ def create_tables():
 
 
 # menu logic
+
+# called by get_today_menu_url and scrape_if_valid
 def get_formatted_date():
     today = date.today()
     formatted_date = f"{today.month}/{today.day}/{today.year}"
@@ -109,23 +111,27 @@ def is_valid_menu(soup):
         return False
     return True
 
+# MAIN SCRAPER 
 def scrape_if_valid():
-    url = get_today_menu_url()
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
+    # iterate over all 3 dining halls
+    for dining_hall in DINING_HALL_ID_DICT:
+        # gets the single url for dining hall menu
+        url = get_today_menu_url(dining_hall)
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    if is_valid_menu(soup):
-        print("Scraping menu.")
-        date = get_formatted_date()
-        print(date)
-        urls = get_all_urls(date, "South Campus") # HARD CODED for only south for now
-        insert_foods_and_macros(urls)
-    else:
-        print("Invalid menu.")
+        # if it's scrapeable, get all food info, then call insert_foods_and_macros to insert into DB
+        if is_valid_menu(soup):
+            date = get_formatted_date()
+            print(f"Scraping {dining_hall} menu on {date}.")
+            foods = get_all_foods(date, dining_hall)
+            insert_foods_and_macros(foods)
+        else:
+            print("Invalid menu.")
 
 
-
-def get_all_urls(date, dining_hall):
+# called by scrape_if_valid
+def get_all_foods(date, dining_hall):
     URL = f"{BASE_URL}?locationNum={DINING_HALL_ID_DICT[dining_hall]}&dtdate={date}"
     result = requests.get(URL)
     soup = BeautifulSoup(result.text, "html.parser")
@@ -596,10 +602,9 @@ if __name__ == "__main__":
     # user = welcome()
     # user_id = user[0]
     # cli_main()
-    # urls = get_all_urls("5/19/2025", "South Campus")
     # insert_foods_and_macros(urls)
     # scrape_if_valid()
-    create_tables()
+    # create_tables()
 
 
 
