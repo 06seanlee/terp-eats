@@ -28,7 +28,7 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS foods (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                url TEXT NOT NULL,
+                url TEXT NOT NULL UNIQUE,
                 protein REAL DEFAULT 0.0,
                 carbs REAL DEFAULT 0.0,
                 fat REAL DEFAULT 0.0,
@@ -89,19 +89,20 @@ def create_tables():
         conn.commit()
 
 
-# menu logic
-
-# called by get_today_menu_url and scrape_if_valid
+# ------------- UTILITY FUNCTIONS --------------------------------
 def get_formatted_date():
     today = date.today()
     formatted_date = f"{today.month}/{today.day}/{today.year}"
     return formatted_date
 
-def get_today_menu_url(dining_hall):
+def get_menu_url(dining_hall, date_str=None):
     if dining_hall not in DINING_HALL_ID_DICT:
         raise ValueError(f"{dining_hall} is not a valid dining hall.")
     
-    date = get_formatted_date()
+    if not date_str:
+        date = get_formatted_date()
+    else:
+        date = date_str
 
     return f"{BASE_URL}?locationNum={DINING_HALL_ID_DICT[dining_hall]}&dtdate={date}"
 
@@ -111,31 +112,50 @@ def is_valid_menu(soup):
         return False
     return True
 
-# MAIN SCRAPER 
-def scrape_if_valid():
-    # iterate over all 3 dining halls
-    for dining_hall in DINING_HALL_ID_DICT:
-        # gets the single url for dining hall menu
-        url = get_today_menu_url(dining_hall)
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
+# ------------- DB HELPERS ---------------------------------------
+# gets all existing urls in the master foods table (used to compare )
+def get_existing_urls():
+    with sqlite3.connect("macro_tracker.db") as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
 
-        # if it's scrapeable, get all food info, then call insert_foods_and_macros to insert into DB
-        if is_valid_menu(soup):
-            date = get_formatted_date()
-            print(f"Scraping {dining_hall} menu on {date}.")
-            foods = get_all_foods(date, dining_hall)
-            insert_foods_and_macros(foods)
-        else:
-            print("Invalid menu.")
+        cursor.execute("SELECT url FROM foods")
+        return {row["url"] for row in cursor.fetchall()}
+        
+def batch_insert_foods(foods_with_macros, db_path="macro_tracker.db"):
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.executemany("""
+            INSERT OR IGNORE INTO foods (name, url, protein, carbs, fat, calories, serving_size)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, [
+            (f["name"], f["url"], f["protein"], f["carbs"], f["fat"], f["calories"], f["serving_size"])
+            for f in foods_with_macros
+        ])
+        conn.commit()
 
+def batch_insert_menus(foods, db_path="macro_tracker.db"):
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
 
-# called by scrape_if_valid
-def get_all_foods(date, dining_hall):
-    URL = f"{BASE_URL}?locationNum={DINING_HALL_ID_DICT[dining_hall]}&dtdate={date}"
-    result = requests.get(URL)
-    soup = BeautifulSoup(result.text, "html.parser")
+        cursor.execute("SELECT id, url FROM foods")
+        url_to_id = {row["url"]: row["id"] for row in cursor.fetchall()}
 
+        menu_entries = [
+            (url_to_id[f["url"]], f["dining_hall"], f["station"], f["date"], f["meal"])
+            for f in foods
+            if f["url"] in url_to_id  # safety guard
+        ]
+
+        cursor.executemany("""
+            INSERT OR IGNORE INTO menus (food_id, location, station, date, meal_type)
+            VALUES (?, ?, ?, ?, ?)
+        """, menu_entries)
+
+# ------------- SCRAPING  ----------------------------------------
+
+def get_all_foods(soup, date, dining_hall):
     foods = []
 
     for meal_type, div_id in meal_id_map.items():
@@ -175,8 +195,23 @@ def get_all_foods(date, dining_hall):
                     "date": date,
                     "allergens": food_allergens
                 })
+
+                print(f"Scraped {food_name} from {dining_hall}.")
     
     return foods
+
+def fetch_macros_for_new(new_foods):
+    results = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_food = {executor.submit(get_macros, f["url"]): f for f in new_foods}
+        for future in as_completed(future_to_food):
+            f = future_to_food[future]
+            try:
+                macros = future.result()
+                results.append({**f, **macros})
+            except Exception as e:
+                print(f"Error fetching macros for {f['name']}: {e}")
+    return results
 
 def get_macros(url):
     result = requests.get(url)
@@ -186,7 +221,7 @@ def get_macros(url):
     name = soup.find("h2").text.strip() if soup.find("h2") else None
     # get serving size
     serving_sizes = soup.find_all("div", class_="nutfactsservsize")
-    serving_size = serving_sizes[1].text.strip() if len(serving_sizes) > 1 else None 
+    serving_size = serving_sizes[1].text.strip().lower() if len(serving_sizes) > 1 else None 
     # get macros
     protein = None
     carbs = None
@@ -217,8 +252,7 @@ def get_macros(url):
             except:
                 pass
 
-
-
+    print(f"Scraped macros for {name}.")
     return {
         "name": name,
         "url": url,
@@ -229,72 +263,34 @@ def get_macros(url):
         "calories": calories or 0.0
     }
 
-def insert_foods_and_macros(foods):
-    with sqlite3.connect("macro_tracker.db") as conn:
-        conn.execute('PRAGMA foreign_keys = ON')
-        cursor = conn.cursor()
 
-        urls_to_fetch = []
-        food_url_map = {}
+# -------------- MAIN SCRAPER ------------------------------------
+def scrape_all_dining_halls():
+    # date_str = get_formatted_date()
+    date_str = "12/19/2025" # HARD CODED FOR NOW CHANGE LATER
+    for hall in DINING_HALL_ID_DICT:
+        url = get_menu_url(hall, date_str)
+        soup = BeautifulSoup(requests.get(url).text, "html.parser")
+        if not is_valid_menu(soup):
+            print(f"Invalid menu for {hall} on {date_str}")
+            continue
 
-        for food in foods:
-            # Try inserting the food
-            try:
-                cursor.execute("""
-                    INSERT INTO foods (name, url, meal, dining_hall, station, date) 
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (food["name"], food["url"], food["meal"], food["dining_hall"], food["station"], food["date"]))
-                conn.commit()
-                print(f"Inserted new food: {food['name']}")
-            except sqlite3.IntegrityError:
-                print(f"Duplicate found: {food['name']}, skipping food insert")
+        print(f"Scraping {hall} menu on {date_str}")
+        foods = get_all_foods(soup, date_str, hall)
 
-            # Only fetch macros if not already in macros table
-            cursor.execute("""
-                SELECT id FROM foods 
-                WHERE url = ? AND id NOT IN (SELECT food_id FROM macros)
-            """, (food["url"],))
-            row = cursor.fetchone()
+        # Determine which foods are new
+        existing_urls = get_existing_urls()
+        new_foods = [f for f in foods if f["url"] not in existing_urls]
 
-            if row:
-                food_id = row[0]
-                urls_to_fetch.append(food["url"])
-                food_url_map[food["url"]] = food_id
+        # Fetch macros only for new foods
+        foods_with_macros = fetch_macros_for_new(new_foods)
 
-    print(f"Fetching {len(urls_to_fetch)} macros concurrently.")
+        # Insert new foods and menus
+        batch_insert_foods(foods_with_macros)
+        batch_insert_menus(foods)
 
-    results = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_url = {executor.submit(get_macros, url): url for url in urls_to_fetch}
-        for future in as_completed(future_to_url):
-            url = future_to_url[future]
-            try:
-                macro_data = future.result()
-                macro_data["food_id"] = food_url_map[url]
-                results.append(macro_data)
-            except Exception as e:
-                print(f"Error fetching {url}: {e}")
-    
-    with sqlite3.connect("macro_tracker.db") as conn:
-        cursor = conn.cursor()
-        for macros in results:
-            try:
-                cursor.execute("""
-                    INSERT INTO macros (food_id, protein, carbs, fat, calories, serving_size)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    macros["food_id"],
-                    macros.get("protein", 0.0),
-                    macros.get("carbs", 0.0),
-                    macros.get("fat", 0.0),
-                    macros.get("calories", 0.0),
-                    macros.get("serving_size", '')
-                ))
-                conn.commit()
-                print(f"Inserted macros for food ID {macros['food_id']}: {macros['name']}")
-            except sqlite3.IntegrityError:
-                print(f"Duplicate macros for food ID {macros['food_id']}, skipping insert.")
 
+       
         
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -605,6 +601,7 @@ if __name__ == "__main__":
     # insert_foods_and_macros(urls)
     # scrape_if_valid()
     # create_tables()
+    scrape_all_dining_halls()
 
 
 
