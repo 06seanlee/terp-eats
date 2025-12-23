@@ -12,11 +12,7 @@ DINING_HALL_ID_DICT = {
     "Yahentamitsi Dining Hall": 19,
     "251 North": 51
 }
-meal_id_map = {
-    "breakfast": "pane-1",
-    "lunch": "pane-2",
-    "dinner": "pane-3"
-}
+
 
 # creates sqlite db (one time use) (DOESN'T HAVE USER, MACRO_GOALS, AND LOGS YET)
 def create_tables():
@@ -123,6 +119,24 @@ def is_valid_menu(soup):
         return False
     return True
 
+def get_meal_id_map(soup):
+    tabs = soup.find_all("a", class_="nav-link")
+    num_tabs = len(tabs)
+
+    if num_tabs == 3:
+        meal_names = ["breakfast", "lunch", "dinner"]
+    elif num_tabs == 2:
+        meal_names = ["brunch", "dinner"]
+    else:
+        raise ValueError(f"Unexpected number of meal tabs: {num_tabs}. Only 2 or 3 supported.")
+
+    meal_id_map = {}
+    for tab, meal_name in zip(tabs, meal_names):
+        panel_id = tab["href"].lstrip("#")  # e.g., "#pane-1" -> "pane-1"
+        meal_id_map[meal_name] = panel_id
+
+    return meal_id_map
+
 # ------------- DB HELPERS ---------------------------------------
 # gets all existing urls in the master foods table (used to compare )
 def get_existing_urls():
@@ -187,6 +201,8 @@ def log_scrape_run(menu_date, ran_at, status, foods_found, new_foods, menu_rows)
 
 def get_all_foods(soup, date, dining_hall):
     foods = []
+
+    meal_id_map = get_meal_id_map(soup)
 
     for meal_type, div_id in meal_id_map.items():
         container = soup.find(id=div_id)
@@ -328,11 +344,13 @@ def scrape_all_dining_halls(date_str=None):
 
     return total_foods_found, total_new_foods, total_menu_rows, date_str
 
-def run_scraper():
+def run_scraper(date_str=None):
     ran_at = datetime.now().isoformat()
+    if not date_str:
+        date_str = get_formatted_date()
 
     try:
-        total_foods_found, total_new_foods, total_menu_rows, date_str = scrape_all_dining_halls("12/19/2025") # HARD CODED DATE CHANGE LATER
+        total_foods_found, total_new_foods, total_menu_rows, date_str = scrape_all_dining_halls(date_str)
         # Determine status
         if total_foods_found == 0:
             status = "closed"
@@ -361,6 +379,12 @@ def run_scraper():
         print(f"Scraped {total_foods_found} foods, added {total_new_foods} new foods, {total_menu_rows} menu rows.")
     else:
         print(f"Scraper failed: {error_message}")
+
+
+
+
+
+
 
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -670,7 +694,7 @@ if __name__ == "__main__":
     # cli_main()
     # insert_foods_and_macros(urls)
     create_tables()
-    run_scraper()
+    run_scraper("12/22/2025")
 
 
 
