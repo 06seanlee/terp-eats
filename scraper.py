@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from werkzeug.security import check_password_hash
-from datetime import date
+from datetime import date, datetime
 
 
 BASE_URL = "https://nutrition.umd.edu/"
@@ -49,17 +49,17 @@ def create_tables():
         )
         """)
 
-        # TODO: ADD FUNCTIONALITY TO TRACK SCRAPING NUMBERS
-        # cursor.execute("""
-        # CREATE TABLE IF NOT EXISTS scrape_runs (
-        #         date TEXT PRIMARY KEY,
-        #         ran_at TEXT,
-        #         status TEXT,
-        #         foods_found INTEGER,
-        #         new_foods INTEGER,
-        #         menu_rows INTEGER
-        # )
-        # """)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS scrape_runs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                menu_date TEXT NOT NULL,
+                ran_at TEXT NOT NULL,
+                status TEXT NOT NULL,
+                foods_found INTEGER DEFAULT 0,
+                new_foods INTEGER DEFAULT 0,
+                menu_rows INTEGER DEFAULT 0
+        )
+        """)
 
         # TODO: USERS, MACRO_GOALS, and LOGS tables  
 
@@ -163,6 +163,25 @@ def batch_insert_menus(foods, db_path="macro_tracker.db"):
             INSERT OR IGNORE INTO menus (food_id, location, station, date, meal_type)
             VALUES (?, ?, ?, ?, ?)
         """, menu_entries)
+
+        return cursor.rowcount
+    
+def log_scrape_run(menu_date, ran_at, status, foods_found, new_foods, menu_rows):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO scrape_runs
+            (menu_date, ran_at, status, foods_found, new_foods, menu_rows)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            menu_date,
+            ran_at,
+            status,
+            foods_found,
+            new_foods,
+            menu_rows
+        ))
+        conn.commit()
 
 # ------------- SCRAPING  ----------------------------------------
 
@@ -276,9 +295,14 @@ def get_macros(url):
 
 
 # -------------- MAIN SCRAPER ------------------------------------
-def scrape_all_dining_halls():
-    # date_str = get_formatted_date()
-    date_str = "12/19/2025" # HARD CODED FOR NOW CHANGE LATER
+def scrape_all_dining_halls(date_str=None):
+    if not date_str:
+        date_str = get_formatted_date()
+
+    total_foods_found = 0 # foods scraped from menus
+    total_new_foods = 0 # unique new foods to be added to "foods" table
+    total_menu_rows = 0 # rows to be added to "menus" table 
+
     for hall in DINING_HALL_ID_DICT:
         url = get_menu_url(hall, date_str)
         soup = BeautifulSoup(requests.get(url).text, "html.parser")
@@ -288,19 +312,55 @@ def scrape_all_dining_halls():
 
         print(f"Scraping {hall} menu on {date_str}")
         foods = get_all_foods(soup, date_str, hall)
+        total_foods_found += len(foods)
 
         # Determine which foods are new
         existing_urls = get_existing_urls()
         new_foods = [f for f in foods if f["url"] not in existing_urls]
+        total_new_foods += len(new_foods)
 
         # Fetch macros only for new foods
         foods_with_macros = fetch_macros_for_new(new_foods)
 
         # Insert new foods and menus
         batch_insert_foods(foods_with_macros)
-        batch_insert_menus(foods)
+        total_menu_rows = batch_insert_menus(foods)
 
+    return total_foods_found, total_new_foods, total_menu_rows, date_str
 
+def run_scraper():
+    ran_at = datetime.now().isoformat()
+
+    try:
+        total_foods_found, total_new_foods, total_menu_rows, date_str = scrape_all_dining_halls("12/19/2025") # HARD CODED DATE CHANGE LATER
+        # Determine status
+        if total_foods_found == 0:
+            status = "closed"
+        else:
+            status = "success"
+        error_message = None
+    except Exception as e:
+        status = "failed"
+        error_message = str(e)
+        total_foods_found = total_new_foods = total_menu_rows = 0
+        date_str = get_formatted_date()
+
+    # Log the run
+    log_scrape_run(
+        menu_date=date_str,
+        ran_at=ran_at,
+        status=status,
+        foods_found=total_foods_found,
+        new_foods=total_new_foods,
+        menu_rows=total_menu_rows
+    )
+
+    if status == "closed":
+        print("Dining halls were closed today.")
+    elif status == "success":
+        print(f"Scraped {total_foods_found} foods, added {total_new_foods} new foods, {total_menu_rows} menu rows.")
+    else:
+        print(f"Scraper failed: {error_message}")
 
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -610,7 +670,7 @@ if __name__ == "__main__":
     # cli_main()
     # insert_foods_and_macros(urls)
     create_tables()
-    scrape_all_dining_halls()
+    run_scraper()
 
 
 
