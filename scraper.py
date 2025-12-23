@@ -395,10 +395,21 @@ def get_food_name_by_id(food_id):
 
 def get_foods_by_meal(meal_type, date, dining_hall):
     query = """
-        SELECT f.id, f.name, f.station, m.protein, m.carbs, m.fat, m.calories
-        FROM foods f
-        JOIN macros m ON f.id = m.food_id
-        WHERE f.meal = ? AND f.date = ? AND f.dining_hall = ?
+        SELECT 
+            f.id,
+            f.name,
+            f.serving_size,
+            m.station,
+            f.protein,
+            f.carbs,
+            f.fat,
+            f.calories
+        FROM menus m
+        JOIN foods f ON m.food_id = f.id
+        WHERE m.meal_type = ?
+          AND m.date = ?
+          AND m.location = ?
+        ORDER BY m.station, f.name
     """
 
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -407,20 +418,22 @@ def get_foods_by_meal(meal_type, date, dining_hall):
         results = cursor.fetchall()
 
     grouped = {}
-    for row in results:
-        food_id, name, station, protein, carbs, fat, calories = row
+    for food_id, name, serving_size, station, protein, carbs, fat, calories in results:
         if station not in grouped:
             grouped[station] = []
+
         grouped[station].append({
-            'id': food_id,
-            'name': name,
-            'protein': protein,
-            'carbs': carbs,
-            'fat': fat,
-            'calories': calories
+            "id": food_id,
+            "name": name,
+            "serving_size": serving_size,
+            "protein": protein,
+            "carbs": carbs,
+            "fat": fat,
+            "calories": calories
         })
-    
+
     return grouped
+
 
 
 
@@ -693,9 +706,13 @@ if __name__ == "__main__":
     # user_id = user[0]
     # cli_main()
     # insert_foods_and_macros(urls)
-    create_tables()
-    run_scraper("12/22/2025")
-
+    # create_tables()
+    # run_scraper("12/22/2025")
+    foods = get_foods_by_meal("breakfast", "12/19/2025", "South Campus")
+    for group, items in foods.items():
+        print(f"{group} has ")
+        for food in items:
+            print(f"{food['name']}")
 
 
 
