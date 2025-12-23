@@ -57,6 +57,20 @@ def create_tables():
         )
         """)
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS food_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            visitor_id TEXT,
+            food_id INTEGER NOT NULL,
+            date TEXT NOT NULL,
+            meal_type TEXT NOT NULL,
+            servings REAL DEFAULT 1.0,
+            FOREIGN KEY(food_id) REFERENCES foods(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """)
+
         # TODO: USERS, MACRO_GOALS, and LOGS tables  
 
         # cursor.execute("""
@@ -80,18 +94,7 @@ def create_tables():
         # )
         # """)
 
-        # cursor.execute("""
-        # CREATE TABLE IF NOT EXISTS logs (
-        #     id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #     user_id INTEGER NOT NULL,
-        #     food_id INTEGER NOT NULL,
-        #     quantity REAL DEFAULT 1.0,
-        #     date TEXT NOT NULL,
-        #     meal TEXT NOT NULL,
-        #     FOREIGN KEY(food_id) REFERENCES foods(id) ON DELETE CASCADE,
-        #     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        # )
-        # """)
+        
 
         conn.commit()
 
