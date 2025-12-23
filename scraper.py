@@ -33,8 +33,7 @@ def create_tables():
                 carbs REAL DEFAULT 0.0,
                 fat REAL DEFAULT 0.0,
                 calories REAL DEFAULT 0.0,
-                serving_size TEXT DEFAULT '',
-                UNIQUE (name)
+                serving_size TEXT DEFAULT ''
         )
         """)
         cursor.execute("""
@@ -49,6 +48,18 @@ def create_tables():
                 UNIQUE(food_id, location, date, meal_type)
         )
         """)
+
+        # TODO: ADD FUNCTIONALITY TO TRACK SCRAPING NUMBERS
+        # cursor.execute("""
+        # CREATE TABLE IF NOT EXISTS scrape_runs (
+        #         date TEXT PRIMARY KEY,
+        #         ran_at TEXT,
+        #         status TEXT,
+        #         foods_found INTEGER,
+        #         new_foods INTEGER,
+        #         menu_rows INTEGER
+        # )
+        # """)
 
         # TODO: USERS, MACRO_GOALS, and LOGS tables  
 
@@ -290,8 +301,7 @@ def scrape_all_dining_halls():
         batch_insert_menus(foods)
 
 
-       
-        
+
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
         cursor = conn.cursor()
@@ -599,9 +609,9 @@ if __name__ == "__main__":
     # user_id = user[0]
     # cli_main()
     # insert_foods_and_macros(urls)
-    # scrape_if_valid()
-    # create_tables()
+    create_tables()
     scrape_all_dining_halls()
+
 
 
 
