@@ -80,11 +80,12 @@ def menu():
         for food_id in selected_food_ids:
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
 
-            # TODO: insert into food_logs table
-            # For now, just print
-            print("Logging food:", food_id, "qty:", quantity)
+            if session.get("user_id"):
+                database.log_food(True, session.get("user_id"), food_id, quantity, date, meal) # log food using user id
+            else:
+                database.log_food(False, session.get("guest_id"), food_id, quantity, date, meal) # log food using guest id
 
-        return redirect(url_for("dashboard"))  # later
+        return redirect(url_for("menu"))  # TODO: CHANGE TO DASHBOARD
 
 
     foods_by_station = database.get_foods_by_meal(meal, date, dining_hall)
@@ -94,6 +95,8 @@ def menu():
         foods=foods_by_station,
         meal=meal
     )
+
+
 
 
 # @app.route('/login', methods=['GET','POST'])

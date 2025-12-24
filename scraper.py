@@ -14,7 +14,7 @@ DINING_HALL_ID_DICT = {
 }
 
 
-# creates sqlite db (one time use) (DOESN'T HAVE MACRO_GOALS, AND LOGS YET)
+# creates sqlite db (one time use) (DOESN'T HAVE MACRO_GOALS)
 def create_tables():
     with sqlite3.connect('macro_tracker.db') as conn:
         conn.execute('PRAGMA foreign_keys = ON')
@@ -71,17 +71,17 @@ def create_tables():
         )
         """)
 
-        # TODO: USERS, MACRO_GOALS, and LOGS tables  
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL, 
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
 
-        # cursor.execute("""
-        # CREATE TABLE IF NOT EXISTS users (
-        #     id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #     username TEXT NOT NULL UNIQUE,
-        #     email TEXT NOT NULL UNIQUE,
-        #     password TEXT NOT NULL, 
-        #     created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        # )
-        # """)
+        # TODO: MACRO_GOALS 
 
         # cursor.execute("""
         # CREATE TABLE IF NOT EXISTS macro_goals (
@@ -397,6 +397,5 @@ def run_scraper(date_str=None):
         print(f"Scraper failed: {error_message}")
 
 if __name__ == "__main__":
-    # create_tables()
-    # run_scraper("12/23/2025")
-    get_meal_type()
+    create_tables()
+    run_scraper("12/24/2025")
