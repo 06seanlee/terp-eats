@@ -1,6 +1,7 @@
 import sqlite3
 from werkzeug.security import check_password_hash
 
+# database.py used for querying database and updating logs/goals/users
 
 def get_food_name_by_id(food_id):
     with sqlite3.connect("macro_tracker.db") as conn:
@@ -51,7 +52,7 @@ def get_foods_by_meal(meal_type, date, dining_hall):
     return grouped
 
 
-# database.py used for querying database and updating logs/goals/users
+
 
 # user logic
 def add_user(username, email, password):

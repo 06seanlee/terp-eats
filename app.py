@@ -33,19 +33,19 @@ def get_identity():
 
 @app.route('/')
 def home():
+    session.clear() # clears all stored 
     return render_template('index.html')
 
 @app.route("/guest")
 def continue_as_guest():
     if "guest_id" not in session:
         session["guest_id"] = str(uuid.uuid4())
+    if session.get("dining_hall"):
+        return redirect(url_for("menu"))
     return redirect(url_for("select_dining_hall"))  
 
 @app.route("/select_dining_hall", methods=["GET", "POST"])
 def select_dining_hall():
-    if session["dining_hall"]:
-        return redirect(url_for("menu"))
-    
     if request.method == "POST":
         dining_hall = request.form.get("dining_hall")
 
@@ -61,8 +61,10 @@ def select_dining_hall():
 def menu():
 
     dining_hall = session.get("dining_hall")
-    date = scraper.get_formatted_date() # auto filled date (based on current)
-    meal = scraper.get_meal_type() # auto filled meal type (based on current)
+    # date = scraper.get_formatted_date() # auto filled date (based on current)
+    date = "12/19/2025" # HARD CODED FOR TESTING
+    # meal = scraper.get_meal_type() # auto filled meal type (based on current)
+    meal = "dinner" # HARD CODED FOR TESTING
 
     print("SESSION STATE:")
     print("dining_hall =", dining_hall)
