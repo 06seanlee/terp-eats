@@ -43,6 +43,9 @@ def continue_as_guest():
 
 @app.route("/select_dining_hall", methods=["GET", "POST"])
 def select_dining_hall():
+    if session["dining_hall"]:
+        return redirect(url_for("menu"))
+    
     if request.method == "POST":
         dining_hall = request.form.get("dining_hall")
 
@@ -50,8 +53,6 @@ def select_dining_hall():
             return redirect(url_for("select_dining_hall"))
 
         session["dining_hall"] = dining_hall
-        session["date"] = "12/19/2025" # HARDCODED CHANGE LATER
-        session["meal"] = "lunch" # HARDCODED
         
         return redirect(url_for("menu"))
     return render_template("select_dining_hall.html")
@@ -60,15 +61,15 @@ def select_dining_hall():
 def menu():
 
     dining_hall = session.get("dining_hall")
-    date = session.get("date")
-    meal = session.get("meal")
+    date = scraper.get_formatted_date() # auto filled date (based on current)
+    meal = scraper.get_meal_type() # auto filled meal type (based on current)
 
     print("SESSION STATE:")
     print("dining_hall =", dining_hall)
     print("date =", date)
     print("meal =", meal)
 
-    if not dining_hall or not date:
+    if not dining_hall:
         return redirect(url_for("select_dining_hall"))
 
     if request.method == "POST":

@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import date, datetime
+from datetime import date, datetime, time
 import requests
 
 # scraper.py used for retrieving nutrition info from website and updating 'foods' and 'menus' table.
@@ -104,6 +104,19 @@ def get_formatted_date():
     today = date.today()
     formatted_date = f"{today.month}/{today.day}/{today.year}"
     return formatted_date
+
+# returns meal type (breakfast, lunch, or dinner) based on current time
+def get_meal_type():
+    breakfast_end = time(10, 30)
+    lunch_end = time(16, 0)
+    now = datetime.now().time()
+    
+    if now < breakfast_end:
+        return "breakfast"
+    elif now < lunch_end:
+        return "lunch"
+    else:
+        return "dinner"
 
 def get_menu_url(dining_hall, date_str=None):
     if dining_hall not in DINING_HALL_ID_DICT:
@@ -384,5 +397,6 @@ def run_scraper(date_str=None):
         print(f"Scraper failed: {error_message}")
 
 if __name__ == "__main__":
-    create_tables()
-    run_scraper("12/23/2025")
+    # create_tables()
+    # run_scraper("12/23/2025")
+    get_meal_type()
