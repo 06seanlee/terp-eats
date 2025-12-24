@@ -10,164 +10,42 @@
             background: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .nav-link {
-            transition: color 0.3s ease;
-        }
-        .nav-link:hover {
-            color: #0d6efd;
-            text-decoration: underline;
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.1);
         }
         .macro-badge {
             font-size: 1rem;
             min-width: 90px;
         }
-        .card {
-            border-radius: 0.75rem;
-            box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.1);
-        }
-        .sidebar {
-            min-height: 100vh;
-            padding-top: 0.5rem;  /* less space on top */
-            padding-bottom: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #ffffff;
-            border-right: 1px solid #dee2e6;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.25rem 0 1rem 0; /* smaller top padding */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 600;
-            font-size: 2rem;
-            color: #212529;
-        }
-
-        .list-group-item-action.text-primary:hover {
-            background-color: #f8f9fa;
-            text-decoration: underline;
-        }
-
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar">
-                <div class="sidebar-header">
-                    <!-- <img src="{{ url_for('static', filename='umd_logo.png') }}" alt="UMD Logo" /> -->
-                    <span>TerpEats</span>
-                </div>
-                <nav class="nav flex-column px-3">
-                    <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('choose_meal') }}">Log Food</a>
-                    <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('view_logs') }}">View Food Logs</a>
-                    <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('set_goals') }}">Set Macro Goals</a>
-                </nav>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Welcome, {{ username if username else "Guest" }}</h1>
 
-
-                <div class="pb-3 px-3 mt-auto">
-                    <a href="{{ url_for('logout') }}" class="btn d-flex align-items-center justify-content-center gap-2 mt-4 mx-auto" style="max-width: 140px;">
-                        <img src="{{ url_for('static', filename='log_out_button.png') }}" alt="Logout Icon" width="20" height="20" />
-                        Log Out
-                    </a>
+        <div class="row justify-content-center g-4">
+            <!-- Today's Macros -->
+            <div class="col-md-3">
+                <div class="card bg-white text-center p-4">
+                    <h5 class="fw-bold mb-4">Today's Macros</h5>
+                    {% if daily_total %}
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <span class="badge bg-primary macro-badge">Calories: {{ daily_total.calories }} cal</span>
+                            <span class="badge bg-success macro-badge">Protein: {{ daily_total.protein }}g</span>
+                            <span class="badge bg-warning text-dark macro-badge">Carbs: {{ daily_total.carbs }}g</span>
+                            <span class="badge bg-danger macro-badge">Fat: {{ daily_total.fat }}g</span>
+                        </div>
+                    {% else %}
+                        <p class="text-muted fst-italic">No food logged today.</p>
+                    {% endif %}
                 </div>
             </div>
+        </div>
 
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 py-5">
-                <h1 class="text-center mb-5">Welcome, {{ username }}</h1>
-                <div class="row justify-content-center g-4">
-                    <!-- Macro Goals -->
-                    <div class="col-md-3">
-                        <div class="card bg-white text-center p-4">
-                            {% if macro_goals %}
-                                <h5 class="fw-bold mb-4">Macro Goals</h5>
-                                <div class="d-flex flex-column gap-2 align-items-center">
-                                    <span class="badge bg-primary macro-badge">Calories: {{ macro_goals[0] }} cal</span>
-                                    <span class="badge bg-success macro-badge">Protein: {{ macro_goals[1] }}g</span>
-                                    <span class="badge bg-warning text-dark macro-badge">Carbs: {{ macro_goals[2] }}g</span>
-                                    <span class="badge bg-danger macro-badge">Fat: {{ macro_goals[3] }}g</span>
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">You have no macro goals set.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Today's Macros -->
-                    <div class="col-md-3">
-                        <div class="card bg-white text-center p-4">
-                            {% if daily_total %}
-                                <h5 class="fw-bold mb-4">Today's Macros</h5>
-                                <div class="d-flex flex-column gap-2 align-items-center">
-                                    <span class="badge bg-primary macro-badge">Calories: {{ daily_total.calories }} cal</span>
-                                    <span class="badge bg-success macro-badge">Protein: {{ daily_total.protein }}g</span>
-                                    <span class="badge bg-warning text-dark macro-badge">Carbs: {{ daily_total.carbs }}g</span>
-                                    <span class="badge bg-danger macro-badge">Fat: {{ daily_total.fat }}g</span>
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">No food consumed today.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Remaining Macros -->
-                    <div class="col-md-3">
-                        <div class="card bg-white text-center p-4">
-                            {% if remaining_macros %}
-                                <h5 class="fw-bold mb-4">Remaining Macros</h5>
-                                <div class="d-flex flex-column gap-2 align-items-center">
-                                    <span class="badge bg-primary macro-badge">Calories: {{ remaining_macros["calories_remaining"] }} cal</span>
-                                    <span class="badge bg-success macro-badge">Protein: {{ remaining_macros["protein_remaining"] }}g</span>
-                                    <span class="badge bg-warning text-dark macro-badge">Carbs: {{ remaining_macros["carbs_remaining"] }}g</span>
-                                    <span class="badge bg-danger macro-badge">Fat: {{ remaining_macros["fat_remaining"] }}g</span>
-                                </div>
-                            {% else %}
-                                <p class="text-muted fst-italic">No remaining macros available.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Today's Food Log Preview -->
-                    <div class="row mt-5 justify-content-center">
-                        <div class="col-lg-6">
-                            <h3 class="text-center mb-4">Today's Food Log</h3>
-
-                            {% if food_logs %}
-                                <div class="list-group">
-                                    {% for food in food_logs[:3] %}
-                                        <a href="{{ url_for('view_logs') }}" class="list-group-item list-group-item-action text-center">
-                                            <div>
-                                                <strong>{{ food.name }}</strong>
-                                                <div class="text-muted small mt-1">
-                                                    {{ food.calories }} cal • {{ food.protein }}g P • {{ food.carbs }}g C • {{ food.fat }}g F
-                                                </div>
-                                                <div class="mt-2">
-                                                    <span class="badge bg-secondary">Quantity: {{ food.quantity }}</span>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    {% endfor %}
-
-                                    {% if food_logs|length > 3 %}
-                                        <a href="{{ url_for('view_logs') }}" class="list-group-item list-group-item-action text-center text-primary fw-semibold">
-                                            View More Foods
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <p class="text-center text-muted fst-italic">No food logged yet today.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                </div>
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 text-center">
+                <a href="{{ url_for('menu') }}" class="btn btn-primary btn-lg mb-3">Log Food</a>
             </div>
         </div>
     </div>

@@ -61,10 +61,12 @@ def select_dining_hall():
 def menu():
 
     dining_hall = session.get("dining_hall")
-    # date = scraper.get_formatted_date() # auto filled date (based on current)
+    current_date = scraper.get_formatted_date() # used for logging
+    # date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
     date = "12/19/2025" # HARD CODED FOR TESTING
     # meal = scraper.get_meal_type() # auto filled meal type (based on current)
     meal = "dinner" # HARD CODED FOR TESTING
+    
 
     print("SESSION STATE:")
     print("dining_hall =", dining_hall)
@@ -81,11 +83,11 @@ def menu():
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
 
             if session.get("user_id"):
-                database.log_food(True, session.get("user_id"), food_id, quantity, date, meal) # log food using user id
+                database.log_food(True, session.get("user_id"), food_id, quantity, current_date, meal) # log food using user id
             else:
-                database.log_food(False, session.get("guest_id"), food_id, quantity, date, meal) # log food using guest id
+                database.log_food(False, session.get("guest_id"), food_id, quantity, current_date, meal) # log food using guest id
 
-        return redirect(url_for("menu"))  # TODO: CHANGE TO DASHBOARD
+        return redirect(url_for("dashboard"))  # TODO: CHANGE TO DASHBOARD
 
 
     foods_by_station = database.get_foods_by_meal(meal, date, dining_hall)
@@ -96,7 +98,32 @@ def menu():
         meal=meal
     )
 
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' in session:
+        is_user = True
+    else:
+        is_user = False
 
+    if is_user:
+        id = session.get('user_id')
+    else:
+        id = session.get('guest_id')
+    
+    
+    date = scraper.get_formatted_date()
+    username = None
+
+    if is_user:
+        user = database.get_user_by_id(id)    
+        username = user[1]
+        total = database.get_daily_macros(True, id, date, False) 
+    else:
+        total = database.get_daily_macros(False, id, date, False) 
+
+    print(total)
+        
+    return render_template('dashboard.html', daily_total=total, username=username)
 
 
 # @app.route('/login', methods=['GET','POST'])

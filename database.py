@@ -75,12 +75,12 @@ def get_foods_by_meal(meal_type, date, dining_hall):
 #         cursor.execute(query, (username,))
 #         return cursor.fetchone()  # returns (id, username, email, created_at) or None
 
-# def get_user_by_id(id):
-#     query = "SELECT id, username, email, created_at FROM users WHERE id = ?"
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         cursor = conn.cursor()
-#         cursor.execute(query, (id,))
-#         return cursor.fetchone()
+def get_user_by_id(id):
+    query = "SELECT id, username, email, created_at FROM users WHERE id = ?"
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (id,))
+        return cursor.fetchone()
 
 # def remove_user(username):
 #     query = "DELETE FROM users WHERE username = ?"
@@ -173,65 +173,81 @@ def get_foods_by_meal(meal_type, date, dining_hall):
 
 #         return goal
     
-# def get_daily_macros(user_id, date, return_foods=True):
-#     query = """
-#     SELECT
-#         f.name,
-#         l.quantity,
-#         m.calories * l.quantity AS total_calories,
-#         m.protein * l.quantity AS total_protein,
-#         m.carbs * l.quantity AS total_carbs,
-#         m.fat * l.quantity AS total_fat,
-#         l.meal,
-#         l.id
-#     FROM logs l
-#     JOIN foods f ON l.food_id = f.id
-#     JOIN macros m on f.id = m.food_id
-#     WHERE l.user_id = ? AND l.date = ?
-#     ORDER BY l.meal
-#     """
+def get_daily_macros(is_user, user_id, date, return_foods=True):
+    if is_user:
+        query = """
+        SELECT
+            f.name,
+            l.servings,
+            f.calories * l.servings AS total_calories,
+            f.protein * l.servings AS total_protein,
+            f.carbs * l.servings AS total_carbs,
+            f.fat * l.servings AS total_fat,
+            l.meal_type,
+            l.id
+        FROM food_logs l
+        JOIN foods f ON l.food_id = f.id
+        WHERE l.user_id = ? AND l.date = ?
+        ORDER BY l.meal_type
+        """
+    else:
+        query = """
+        SELECT
+            f.name,
+            l.servings,
+            f.calories * l.servings AS total_calories,
+            f.protein * l.servings AS total_protein,
+            f.carbs * l.servings AS total_carbs,
+            f.fat * l.servings AS total_fat,
+            l.meal_type,
+            l.id
+        FROM food_logs l
+        JOIN foods f ON l.food_id = f.id
+        WHERE l.visitor_id = ? AND l.date = ?
+        ORDER BY l.meal_type
+        """
 
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         cursor = conn.cursor()
-#         cursor.execute(query, (user_id, date))
-#         rows = cursor.fetchall()
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (user_id, date))
+        rows = cursor.fetchall()
     
-#     if not rows:
-#         print("No logs found for this date and user")
+    if not rows:
+        print("No logs found for this date and user")
     
-#     foods = []
-#     total_cals = total_protein = total_carbs = total_fat = 0
+    foods = []
+    total_cals = total_protein = total_carbs = total_fat = 0
 
-#     for name, quantity, calories, protein, carbs, fat, meal, log_id in rows:
-#         calories = round(calories, 1)
-#         protein = round(protein, 1)
-#         carbs = round(carbs, 1)
-#         fat = round(fat, 1)
+    for name, quantity, calories, protein, carbs, fat, meal, log_id in rows:
+        calories = round(calories, 1)
+        protein = round(protein, 1)
+        carbs = round(carbs, 1)
+        fat = round(fat, 1)
 
-#         foods.append({
-#             "name": name,
-#             "quantity": quantity,
-#             "calories": calories,
-#             "protein": protein,
-#             "carbs": carbs,
-#             "fat": fat,
-#             "meal": meal,
-#             "log_id": log_id
-#         })
+        foods.append({
+            "name": name,
+            "quantity": quantity,
+            "calories": calories,
+            "protein": protein,
+            "carbs": carbs,
+            "fat": fat,
+            "meal": meal,
+            "log_id": log_id
+        })
         
-#         total_cals += calories
-#         total_protein += protein
-#         total_carbs += carbs
-#         total_fat += fat
+        total_cals += calories
+        total_protein += protein
+        total_carbs += carbs
+        total_fat += fat
 
-#     total = {
-#         "calories": round(total_cals, 1),
-#         "protein": round(total_protein, 1),
-#         "carbs": round(total_carbs, 1),
-#         "fat": round(total_fat, 1)
-#     }
+    total = {
+        "calories": round(total_cals, 1),
+        "protein": round(total_protein, 1),
+        "carbs": round(total_carbs, 1),
+        "fat": round(total_fat, 1)
+    }
 
-#     return (foods, total) if return_foods else total
+    return (foods, total) if return_foods else total
 
 # def get_remaining_macros(user_id, date):
     goal = get_macro_goals(user_id)
