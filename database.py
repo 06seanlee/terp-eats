@@ -218,7 +218,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
     foods = []
     total_cals = total_protein = total_carbs = total_fat = 0
 
-    for name, quantity, calories, protein, carbs, fat, meal, log_id in rows:
+    for name, servings, calories, protein, carbs, fat, meal, log_id in rows:
         calories = round(calories, 1)
         protein = round(protein, 1)
         carbs = round(carbs, 1)
@@ -226,7 +226,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
 
         foods.append({
             "name": name,
-            "quantity": quantity,
+            "servings": servings,
             "calories": calories,
             "protein": protein,
             "carbs": carbs,

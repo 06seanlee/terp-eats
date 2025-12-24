@@ -100,30 +100,19 @@ def menu():
 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' in session:
-        is_user = True
-    else:
-        is_user = False
-
-    if is_user:
-        id = session.get('user_id')
-    else:
-        id = session.get('guest_id')
-    
-    
     date = scraper.get_formatted_date()
     username = None
 
-    if is_user:
+    if 'user_id' in session:
+        id = session.get('user_id')
         user = database.get_user_by_id(id)    
         username = user[1]
-        total = database.get_daily_macros(True, id, date, False) 
+        foods, total = database.get_daily_macros(True, id, date, True) 
     else:
-        total = database.get_daily_macros(False, id, date, False) 
-
-    print(total)
+        id = session.get('guest_id')
+        foods, total = database.get_daily_macros(False, id, date, True) 
         
-    return render_template('dashboard.html', daily_total=total, username=username)
+    return render_template('dashboard.html', daily_total=total, username=username, daily_foods=foods)
 
 
 # @app.route('/login', methods=['GET','POST'])
