@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from werkzeug.security import check_password_hash
 
 # database.py used for querying database and updating logs/goals/users
@@ -332,3 +333,26 @@ def log_food(is_user, id, food_id, quantity, date, meal):
 #         """, (quantity, date, log_id))
 
 #         conn.commit()
+
+def format_date(date):
+    format_pattern = "%Y-%m-%d"
+    date_object = datetime.strptime(date, format_pattern)
+    formatted_date = f"{date_object.month}/{date_object.day}/{date_object.year}"
+    return formatted_date
+
+def valid_date(date):
+    formatted_date = format_date(date)
+    query = "SELECT id FROM menus WHERE date = ?"
+
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (formatted_date, ))
+        results = cursor.fetchone()
+
+        if results:
+            return True
+        else:
+            return False
+    
+# from database import valid_date
+# valid_date("2025-12-19")

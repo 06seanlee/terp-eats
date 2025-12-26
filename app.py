@@ -60,11 +60,14 @@ def select_dining_hall():
 @app.route("/menu", methods=["GET", "POST"])
 def menu():
     dining_hall = session.get("dining_hall")
-    current_date = scraper.get_formatted_date() # used for logging
-    # date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
-    date = "12/19/2025" # HARD CODED FOR TESTING
+    current_date = scraper.get_formatted_date() # used for logging, DON'T CHANGE
+    if not session.get("date"):
+        date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
+    else:
+        date = session["date"]
+    # date = "12/19/2025" # HARD CODED FOR TESTING
     meal = scraper.get_meal_type() # auto filled meal type (based on current)
-    # meal = "dinner" # HARD CODED FOR TESTING
+    # meal = "brunch" # HARD CODED FOR TESTING
     
 
     print("SESSION STATE:")
@@ -77,11 +80,16 @@ def menu():
 
     if request.method == "POST":
         # user wants to change dining hall
-        if request.form.get("change-dining-hall"):
+        if request.form.get("change-menu"):
             dining_hall = request.form.get("dining-hall")
+            new_date = request.form.get('date')
+            if new_date and database.valid_date(new_date): # menu has entries from this date
+                date = database.format_date(new_date) # correct formatting for date
+                session["date"] = date
 
-            if dining_hall != session.get("dining_hall") and dining_hall != "Placeholder":
+            if dining_hall != "Placeholder":
                 session["dining_hall"] = dining_hall
+            
             return redirect(url_for("menu"))
 
 
@@ -103,7 +111,8 @@ def menu():
     return render_template(
         "menu.html",
         foods=foods_by_station,
-        meal=meal
+        meal=meal,
+        date=date
     )
 
 @app.route('/dashboard')
