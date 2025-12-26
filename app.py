@@ -65,10 +65,11 @@ def menu():
         date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
     else:
         date = session["date"]
-    # date = "12/19/2025" # HARD CODED FOR TESTING
-    meal = scraper.get_meal_type() # auto filled meal type (based on current)
-    # meal = "brunch" # HARD CODED FOR TESTING
     
+    if not session.get("meal_type"):
+        meal = scraper.get_meal_type() # auto filled meal type (based on current)
+    else:
+        meal = session["meal_type"]
 
     print("SESSION STATE:")
     print("dining_hall =", dining_hall)
@@ -79,16 +80,21 @@ def menu():
         return redirect(url_for("select_dining_hall"))
 
     if request.method == "POST":
-        # user wants to change dining hall
+        # user wants to change menu
         if request.form.get("change-menu"):
             dining_hall = request.form.get("dining-hall")
+            if dining_hall != "Placeholder":
+                session["dining_hall"] = dining_hall
+                
             new_date = request.form.get('date')
             if new_date and database.valid_date(new_date): # menu has entries from this date
                 date = database.format_date(new_date) # correct formatting for date
                 session["date"] = date
 
-            if dining_hall != "Placeholder":
-                session["dining_hall"] = dining_hall
+            new_meal = request.form.get('meal-type')
+            if new_meal != "Placeholder":
+                meal = new_meal
+                session["meal_type"] = meal
             
             return redirect(url_for("menu"))
 
