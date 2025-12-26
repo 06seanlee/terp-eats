@@ -9,86 +9,70 @@
             background: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .sidebar {
-            min-height: 100vh;
-            padding-top: 0.5rem;
-            padding-bottom: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #ffffff;
-            border-right: 1px solid #dee2e6;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.25rem 0 1rem 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 600;
-            font-size: 2rem;
-            color: #212529;
-        }
-
-        .nav-link {
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: #0d6efd;
-            text-decoration: underline;
-        }
-
         .form-control.quantity-input {
             max-width: 100px;
             margin: 0 auto;
         }
+        nav ul {
+            list-style-type: none; /* Removes the bullet points */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333; /* Dark background color */
+            display: flex; /* Aligns list items horizontally */
+        }
+
+        /* Style the list items */
+        nav li {
+            float: left; /* Alternative to flex for horizontal layout */
+        }
+
+        /* Style the links */
+        nav li a {
+            display: block; /* Makes the entire area clickable */
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none; /* Removes the default underline from links */
+        }
+
+        /* Change the color of links on hover */
+        nav li a:hover {
+            background-color: #111;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
+            <li><a href="{{ url_for('view_logs')}}">View Logs</a></li>
+        </ul>
+    </nav>
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar">
-            <div class="sidebar-header">TerpEats</div>
-            <nav class="nav flex-column px-3">
-                <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('choose_meal') }}">Log Food</a>
-                <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('view_logs') }}">View Food Logs</a>
-                <a class="nav-link text-primary fw-semibold fs-5" href="{{ url_for('set_goals') }}">Set Macro Goals</a>
-            </nav>
-            <div class="pb-3 px-3 mt-auto">
-                <a href="{{ url_for('logout') }}" class="btn d-flex align-items-center justify-content-center gap-2 mt-4 mx-auto" style="max-width: 140px;">
-                    <img src="{{ url_for('static', filename='log_out_button.png') }}" alt="Logout Icon" width="20" height="20" />
-                    Log Out
-                </a>
-            </div>
-        </div>
-
         <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 py-5">
+        <div class="py-5">
             <h1 class="text-center mb-5">All Food Logs for {{ date }}</h1>
 
             {% if food_logs %}
                 {% for food in food_logs %}
                     <form method="POST" action="{{ url_for('modify_log') }}" class="mb-4">
                         <input type="hidden" name="log_id" value="{{ food.log_id }}">
-
                         <div class="card shadow-sm">
                             <div class="card-body text-center">
                                 <h5 class="card-title">{{ food.name }}</h5>
                                 <p class="card-text small text-muted">
-                                    {{ food.meal }}
+                                    {{ food.meal.capitalize() }}
                                 </p>
                                 <p class="card-text small text-muted">
                                     {{ food.calories }} cal &bull; {{ food.protein }}g protein &bull; {{ food.carbs }}g carbs &bull; {{ food.fat }}g fat
                                 </p>
 
                                 <div class="mb-3">
-                                    <label class="form-label mb-1">Quantity</label>
-                                    <input type="number" name="quantity" value="{{ food.quantity }}" class="form-control quantity-input text-center" required>
+                                    <label class="form-label mb-1">Servings</label>
+                                    <input type="float" name="servings" value="{{ food.servings }}" class="form-control quantity-input text-center">
                                 </div>
 
                                 <div class="d-flex justify-content-center gap-3">

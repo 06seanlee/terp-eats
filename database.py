@@ -298,17 +298,17 @@ def log_food(is_user, id, food_id, quantity, date, meal):
         conn.commit()
         return True
 
-# def remove_log_by_id(id):
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         conn.execute('PRAGMA foreign_keys = ON')
-#         cursor = conn.cursor()
+def remove_log_by_id(id):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        conn.execute('PRAGMA foreign_keys = ON')
+        cursor = conn.cursor()
 
-#         cursor.execute("""
-#             DELETE FROM logs WHERE id = ?
-#         """, (id,))
+        cursor.execute("""
+            DELETE FROM food_logs WHERE id = ?
+        """, (id,))
 
-#         conn.commit()
-#         return cursor.rowcount > 0
+        conn.commit()
+        return cursor.rowcount > 0
 
 # def remove_log_by_date(date):
 #     with sqlite3.connect("macro_tracker.db") as conn:
@@ -321,18 +321,18 @@ def log_food(is_user, id, food_id, quantity, date, meal):
 
 #     conn.commit()
 
-# def update_log(log_id, quantity, date):
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         conn.execute('PRAGMA foreign_keys = ON')
-#         cursor = conn.cursor()
+def update_log(log_id, servings):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        conn.execute('PRAGMA foreign_keys = ON')
+        cursor = conn.cursor()
 
-#         cursor.execute("""
-#             UPDATE logs 
-#             SET quantity = ?, date = ?
-#             WHERE id = ?
-#         """, (quantity, date, log_id))
+        cursor.execute("""
+            UPDATE food_logs 
+            SET servings = ?
+            WHERE id = ?
+        """, (servings, log_id))
 
-#         conn.commit()
+        conn.commit()
 
 def format_date(date):
     format_pattern = "%Y-%m-%d"

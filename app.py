@@ -71,11 +71,6 @@ def menu():
     else:
         meal = session["meal_type"]
 
-    print("SESSION STATE:")
-    print("dining_hall =", dining_hall)
-    print("date =", date)
-    print("meal =", meal)
-
     if not dining_hall:
         return redirect(url_for("select_dining_hall"))
 
@@ -87,7 +82,7 @@ def menu():
                 session["dining_hall"] = dining_hall
                 
             new_date = request.form.get('date')
-            if new_date and database.valid_date(new_date): # menu has entries from this date
+            if new_date: # menu has entries from this date
                 date = database.format_date(new_date) # correct formatting for date
                 session["date"] = date
 
@@ -100,6 +95,8 @@ def menu():
 
 
         selected_food_ids = request.form.getlist("food_id")
+        if not selected_food_ids:
+            return render_template("menu.html", foods=None, meal=meal, date=date)
 
         for food_id in selected_food_ids:
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
@@ -136,6 +133,36 @@ def dashboard():
         foods, total = database.get_daily_macros(False, id, date, True) 
         
     return render_template('dashboard.html', daily_total=total, username=username, daily_foods=foods)
+
+@app.route('/view_logs')
+def view_logs():
+    date = scraper.get_formatted_date()
+    username = None
+
+    if 'user_id' in session:
+        id = session.get('user_id')
+        user = database.get_user_by_id(id)    
+        username = user[1]
+        foods, total = database.get_daily_macros(True, id, date, True) 
+    else:
+        id = session.get('guest_id')
+        foods, total = database.get_daily_macros(False, id, date, True) 
+    return render_template("view_logs.html", date=date, food_logs=foods, username=username)
+
+@app.route('/modify_log', methods=['POST'])
+def modify_log():
+    log_id = request.form.get('log_id')
+    action = request.form.get('action')
+
+    if action == 'delete':
+        database.remove_log_by_id(log_id)
+    elif action == 'update':
+        servings = float(request.form.get('servings'))
+        if servings < 0:
+            servings = 1
+        database.update_log(log_id, servings)
+
+    return redirect(url_for('view_logs'))
 
 
 # @app.route('/login', methods=['GET','POST'])

@@ -24,10 +24,44 @@
         .quantity-input {
             display: none;
         }
+        nav ul {
+            list-style-type: none; /* Removes the bullet points */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333; /* Dark background color */
+            display: flex; /* Aligns list items horizontally */
+        }
+
+        /* Style the list items */
+        nav li {
+            float: left; /* Alternative to flex for horizontal layout */
+        }
+
+        /* Style the links */
+        nav li a {
+            display: block; /* Makes the entire area clickable */
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none; /* Removes the default underline from links */
+        }
+
+        /* Change the color of links on hover */
+        nav li a:hover {
+            background-color: #111;
+            text-decoration: none;
+        }
     </style>
 </head>
 
 <body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
+            <li><a href="{{ url_for('view_logs')}}">View Logs</a></li>
+        </ul>
+    </nav>
 <div class="container py-5">
 
     <h1 class="mb-4 text-center">
@@ -60,59 +94,65 @@
             </button>
         </div>
     </form>
+    <hr>
+    {% if foods %}
+        <form method="POST">
+            {% for station, station_foods in foods.items() %}
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">{{ station }}</h4>
+                    </div>
 
-    <form method="POST">
-        {% for station, station_foods in foods.items() %}
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0">{{ station }}</h4>
-                </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for food in station_foods %}
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded food-card">
+                                        <input
+                                            type="checkbox"
+                                            name="food_id"
+                                            value="{{ food.id }}"
+                                            id="food_{{ food.id }}"
+                                            class="d-none"
+                                        >
 
-                <div class="card-body">
-                    <div class="row g-3">
-                        {% for food in station_foods %}
-                            <div class="col-md-6">
-                                <div class="p-3 border rounded food-card">
-                                    <input
-                                        type="checkbox"
-                                        name="food_id"
-                                        value="{{ food.id }}"
-                                        id="food_{{ food.id }}"
-                                        class="d-none"
-                                    >
+                                        <label for="food_{{ food.id }}" class="fw-bold mb-1">
+                                            {{ food.name }}
+                                        </label>
 
-                                    <label for="food_{{ food.id }}" class="fw-bold mb-1">
-                                        {{ food.name }}
-                                    </label>
+                                        <div class="small text-muted mb-2">
+                                            Protein: {{ food.protein }}g |
+                                            Carbs: {{ food.carbs }}g |
+                                            Fat: {{ food.fat }}g |
+                                            Calories: {{ food.calories }}
+                                        </div>
 
-                                    <div class="small text-muted mb-2">
-                                        Protein: {{ food.protein }}g |
-                                        Carbs: {{ food.carbs }}g |
-                                        Fat: {{ food.fat }}g |
-                                        Calories: {{ food.calories }}
+                                        <input
+                                            type="number"
+                                            name="quantity_{{ food.id }}"
+                                            class="form-control quantity-input"
+                                            min="1"
+                                            value="1"
+                                        >
                                     </div>
-
-                                    <input
-                                        type="number"
-                                        name="quantity_{{ food.id }}"
-                                        class="form-control quantity-input"
-                                        min="1"
-                                        value="1"
-                                    >
                                 </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
 
-        <div class="text-center">
-            <button type="submit" name = "log-foods" class="btn btn-primary btn-lg">
-                Log Selected Foods
-            </button>
-        </div>
-    </form>
+            <div class="text-center">
+                <button type="submit" name = "log-foods" class="btn btn-primary btn-lg">
+                    Log Selected Foods
+                </button>
+            </div>
+        </form>
+    {% else %}
+        <h1 class="mb-4 text-center">
+            No Data Available
+        </h1>
+    {% endif %}
 </div>
 
 <script>

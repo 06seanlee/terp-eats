@@ -18,9 +18,47 @@
             font-size: 1rem;
             min-width: 90px;
         }
+        nav ul {
+            list-style-type: none; /* Removes the bullet points */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333; /* Dark background color */
+            display: flex; /* Aligns list items horizontally */
+        }
+
+        /* Style the list items */
+        nav li {
+            float: left; /* Alternative to flex for horizontal layout */
+        }
+
+        /* Style the links */
+        nav li a {
+            display: block; /* Makes the entire area clickable */
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none; /* Removes the default underline from links */
+        }
+
+        /* Change the color of links on hover */
+        nav li a:hover {
+            background-color: #111;
+            text-decoration: none;
+        }
+        .food-logs {
+            text-decoration: none;
+        }
+        
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
+            <li><a href="{{ url_for('view_logs')}}">View Logs</a></li>
+        </ul>
+    </nav>
     <div class="container py-5">
         <h1 class="text-center mb-5">Welcome, {{ username if username else "Guest" }}</h1>
 
@@ -48,32 +86,34 @@
             <div class="col-md-8">
                 <h3 class="text-center mb-4">Foods Logged Today</h3>
                 {% if daily_foods %}
-                    <table class="table table-striped bg-white shadow-sm rounded">
-                        <thead>
-                            <tr>
-                                <th scope="col">Food</th>
-                                <th scope="col">Servings</th>
-                                <th scope="col">Calories</th>
-                                <th scope="col">Protein</th>
-                                <th scope="col">Carbs</th>
-                                <th scope="col">Fat</th>
-                                <th scope="col">Meal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for food in daily_foods %}
+                    <a class="food-logs" href="{{ url_for('view_logs') }}" >
+                        <table class="table table-striped bg-white shadow-sm rounded">
+                            <thead>
                                 <tr>
-                                    <td>{{ food.name }}</td>
-                                    <td>{{ food.servings }}</td>
-                                    <td>{{ food.calories }}</td>
-                                    <td>{{ food.protein }}</td>
-                                    <td>{{ food.carbs }}</td>
-                                    <td>{{ food.fat }}</td>
-                                    <td>{{ food.meal }}</td>
+                                    <th scope="col">Food</th>
+                                    <th scope="col">Servings</th>
+                                    <th scope="col">Calories</th>
+                                    <th scope="col">Protein</th>
+                                    <th scope="col">Carbs</th>
+                                    <th scope="col">Fat</th>
+                                    <th scope="col">Meal</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for food in daily_foods %}
+                                    <tr>
+                                        <td>{{ food.name }}</td>
+                                        <td>{{ food.servings }}</td>
+                                        <td>{{ food.calories }}</td>
+                                        <td>{{ food.protein }}</td>
+                                        <td>{{ food.carbs }}</td>
+                                        <td>{{ food.fat }}</td>
+                                        <td>{{ food.meal.capitalize() }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </a>
                 {% else %}
                     <p class="text-center text-muted fst-italic">No foods logged today.</p>
                 {% endif %}
