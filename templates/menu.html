@@ -33,6 +33,21 @@
     <h1 class="mb-4 text-center">
         Menu - {{ session["dining_hall"] }} for {{ meal.capitalize() }}
     </h1>
+    <form method="POST">
+        <label for="dining-hall">Change dining hall:</label>
+        <select name="dining-hall">
+            <option value="Placeholder">--Select--</option>
+            <option value="South Campus">South</option>
+            <option value="Yahentamitsi Dining Hall">Yahentamitsi</option>
+            <option value="251 North">251 North</option>
+        </select>
+    
+        <div class="text-center">
+            <button type="submit" name="change-dining-hall" value = "change-dining-hall" class="btn btn-primary btn-lg">
+                Change Dining Hall
+            </button>
+        </div>
+    </form>
 
     <form method="POST">
         {% for station, station_foods in foods.items() %}
@@ -81,7 +96,7 @@
         {% endfor %}
 
         <div class="text-center">
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" name = "log-foods" class="btn btn-primary btn-lg">
                 Log Selected Foods
             </button>
         </div>
