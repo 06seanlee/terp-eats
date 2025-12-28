@@ -56,18 +56,19 @@ def get_foods_by_meal(meal_type, date, dining_hall):
 
 
 # user logic
-# def add_user(username, email, password):
-#     query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+def create_user(username, email, password):
+    query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 
-#     try:
-#         with sqlite3.connect("macro_tracker.db") as conn:
-#             cursor = conn.cursor()
-#             cursor.execute(query, (username, email, password))
-#             conn.commit()
-#             return cursor.lastrowid  # return new user's ID
-#     except sqlite3.IntegrityError:
-#         print(f"Username '{username}' already exists.")
-#         return None
+    try:
+        with sqlite3.connect("macro_tracker.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (username, email, password))
+            conn.commit()
+            return cursor.lastrowid  # return new user's ID
+    except sqlite3.IntegrityError as err:
+        print(f"Integrity Error: {err}")
+        print(f"Username '{username}' or email '{email}' already exists.")
+        return None
     
 # def get_user_by_username(username):
 #     query = "SELECT id, username, email, created_at FROM users WHERE username = ?"

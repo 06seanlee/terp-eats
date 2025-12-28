@@ -9,26 +9,10 @@ import scraper
 
 load_dotenv()
 
-
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY not set")
-
-def get_identity():
-    """
-    Returns a tuple: (type, id)
-    type: 'guest' or 'user'
-    id: visitor_id or user_id
-    """
-    if "user_id" in session:
-        return ("user", session["user_id"])
-    
-    # if not logged in, use guest feature
-    if "guest_id" not in session:
-        session["guest_id"] = str(uuid.uuid4())
-    return ("guest", session["guest_id"])
-
 
 
 @app.route('/')
