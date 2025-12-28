@@ -20,6 +20,39 @@ def home():
     session.clear() # clears all stored 
     return render_template('index.html')
 
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        is_valid_account = database.validate_account(username, password)
+
+        if is_valid_account:
+            user_id = database.get_user_by_username(username)[0]
+            session['user_id'] = user_id
+            return redirect(url_for('select_dining_hall'))
+        return render_template('login.html', is_valid_account=is_valid_account, attempted=True)
+    
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        plain_password = request.form['password']
+        hashed_password = generate_password_hash(plain_password)
+
+        user_id = scraper.add_user(username, email, hashed_password)
+        if user_id:
+            session['user_id'] = user_id
+            session['new_user'] = True  # Flag this session as a new user
+            return redirect(url_for('set_goals'))
+        else:
+            return redirect(url_for('register'))
+        
+    return render_template('register.html')
+
 @app.route("/guest")
 def continue_as_guest():
     if "guest_id" not in session:
@@ -149,37 +182,7 @@ def modify_log():
     return redirect(url_for('view_logs'))
 
 
-# @app.route('/login', methods=['GET','POST'])
-# def login():
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         email = request.form['email']
-#         password = request.form['password']
-#         valid_account = scraper.validate_account(username, email, password)
 
-#         if valid_account:
-#             user_id = scraper.get_user_by_username(username)[0]
-#             session['user_id'] = user_id
-#             return redirect(url_for('dashboard'))
-#         return redirect(url_for('login'))
-#     return render_template('login.html')
-
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         email = request.form['email']
-#         plain_password = request.form['password']
-#         hashed_password = generate_password_hash(plain_password)
-
-#         user_id = scraper.add_user(username, email, hashed_password)
-#         if user_id:
-#             session['user_id'] = user_id
-#             session['new_user'] = True  # Flag this session as a new user
-#             return redirect(url_for('set_goals'))
-#         else:
-#             return redirect(url_for('register'))
-#     return render_template('register.html')
 
 # @app.route('/dashboard')
 # def dashboard():

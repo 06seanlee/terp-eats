@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # database.py used for querying database and updating logs/goals/users
 
@@ -62,7 +62,7 @@ def create_user(username, email, password):
     try:
         with sqlite3.connect("macro_tracker.db") as conn:
             cursor = conn.cursor()
-            cursor.execute(query, (username, email, password))
+            cursor.execute(query, (username, email, generate_password_hash(password)))
             conn.commit()
             return cursor.lastrowid  # return new user's ID
     except sqlite3.IntegrityError as err:
@@ -70,12 +70,12 @@ def create_user(username, email, password):
         print(f"Username '{username}' or email '{email}' already exists.")
         return None
     
-# def get_user_by_username(username):
-#     query = "SELECT id, username, email, created_at FROM users WHERE username = ?"
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         cursor = conn.cursor()
-#         cursor.execute(query, (username,))
-#         return cursor.fetchone()  # returns (id, username, email, created_at) or None
+def get_user_by_username(username):
+    query = "SELECT id FROM users WHERE username = ?"
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (username,))
+        return cursor.fetchone()
 
 def get_user_by_id(id):
     query = "SELECT id, username, email, created_at FROM users WHERE id = ?"
@@ -84,12 +84,12 @@ def get_user_by_id(id):
         cursor.execute(query, (id,))
         return cursor.fetchone()
 
-# def remove_user(username):
-#     query = "DELETE FROM users WHERE username = ?"
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         cursor = conn.cursor()
-#         cursor.execute(query, (username,))
-#         conn.commit()
+def remove_user(username):
+    query = "DELETE FROM users WHERE username = ?"
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (username,))
+        conn.commit()
 
 # def update_user_username(old_username, new_username):
 #     query = "UPDATE users SET username = ? WHERE username = ?"
@@ -117,17 +117,17 @@ def get_user_by_id(id):
 #         cursor.execute("SELECT 1 FROM users WHERE email = ?", (email,))
 #         return cursor.fetchone() is not None
 
-# def validate_account(username, email, password):
-#     with sqlite3.connect("macro_tracker.db") as conn:
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT password FROM users WHERE username = ? AND email = ?", (username, email))
-#         row = cursor.fetchone()
+def validate_account(username, password):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT password FROM users WHERE username = ?", (username, ))
+        row = cursor.fetchone()
 
-#         if row is None:
-#             return False
+        if row is None:
+            return False
         
-#         stored_password = row[0]
-#         return check_password_hash(stored_password, password)
+        stored_password = row[0]
+        return check_password_hash(stored_password, password)
 
 
 # def set_macro_goals(user_id, calories, protein, carbs, fat):
