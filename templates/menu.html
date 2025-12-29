@@ -52,6 +52,22 @@
             background-color: #111;
             text-decoration: none;
         }
+        .tab {
+            background: none;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            font: inherit;
+        }
+        .tab.active {
+            color: red;
+        }
+        .meal {
+            display: none;
+        }
+        .meal.active {
+            display: block;
+        }
     </style>
 </head>
 
@@ -65,7 +81,7 @@
 <div class="container py-5">
 
     <h1 class="mb-4 text-center">
-        Menu - {{ session["dining_hall"] }} for {{ meal.capitalize() }} on {{ date }}
+        Menu - {{ session["dining_hall"] }} on {{ date }}
     </h1>
     <form method="POST">
         <label for="dining-hall">Change dining hall:</label>
@@ -78,16 +94,7 @@
 
         <label for="date">Change date:</label>
         <input type="date" name="date">
-    
-        <label for="meal-type">Change meal time:</label>
-        <select name="meal-type">
-            <option value="Placeholder">--Select--</option>
-            <option value="breakfast">Breakfast</option>
-            <option value="brunch">Brunch</option>
-            <option value="lunch">Lunch</option>
-            <option value="dinner">Dinner</option>
-        </select>
-
+        
         <div class="text-center">
             <button type="submit" name="change-menu" value="change-menu" class="btn btn-primary btn-lg">
                 Change Menu
@@ -96,60 +103,73 @@
     </form>
     <hr>
     {% if foods %}
-        <form method="POST">
-            {% for station, station_foods in foods.items() %}
-                <div class="card mb-4">
-                    <div class="card-header bg-secondary text-white">
-                        <h4 class="mb-0">{{ station }}</h4>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="row g-3">
-                            {% for food in station_foods %}
-                                <div class="col-md-6">
-                                    <div class="p-3 border rounded food-card">
-                                        <input
-                                            type="checkbox"
-                                            name="food_id"
-                                            value="{{ food.id }}"
-                                            id="food_{{ food.id }}"
-                                            class="d-none"
-                                        >
-
-                                        <label for="food_{{ food.id }}" class="fw-bold mb-1">
-                                            {{ food.name }}
-                                        </label>
-                                        
-                                        <a>| {{ food.serving_size }}</a>
-
-                                        <div class="small text-muted mb-2">
-                                            Protein: {{ food.protein }}g |
-                                            Carbs: {{ food.carbs }}g |
-                                            Fat: {{ food.fat }}g |
-                                            Calories: {{ food.calories }}
+        {% macro render_meal(meal_name, meal_foods, is_first=False) %}
+            <div class="meal {% if is_first %}active{% endif %}" id="{{ meal_name }}">
+                {% for station, station_foods in meal_foods.items() %} 
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0">{{ station }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% for food in station_foods %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 border rounded food-card">
+                                            <input type="checkbox" name="food_id" value="{{ food.id }}" 
+                                                id="food_{{ food.id }}" class="d-none">
+                                            <label for="food_{{ food.id }}" class="fw-bold mb-1">
+                                                {{ food.name }}
+                                            </label>
+                                            <a>| {{ food.serving_size }}</a>
+                                            <div class="small text-muted mb-2">
+                                                Protein: {{ food.protein }}g | Carbs: {{ food.carbs }}g | 
+                                                Fat: {{ food.fat }}g | Calories: {{ food.calories }}
+                                            </div>
+                                            <input type="number" name="quantity_{{ food.id }}" 
+                                                class="form-control quantity-input" min="1" value="1">
                                         </div>
-
-                                        <input
-                                            type="number"
-                                            name="quantity_{{ food.id }}"
-                                            class="form-control quantity-input"
-                                            min="1"
-                                            value="1"
-                                        >
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
+        {% endmacro %}
+
+        {% if has_brunch %}
+            <div class="tabs">
+                <button class="tab active" data-meal="brunch">Brunch</button>
+                <button class="tab" data-meal="dinner">Dinner</button>
+            </div>
+        {% else %}
+            <div class="tabs">
+                <button class="tab active" data-meal="breakfast">Breakfast</button>
+                <button class="tab" data-meal="lunch">Lunch</button>
+                <button class="tab" data-meal="dinner">Dinner</button>
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="hidden" name="meal_type" id="current-meal" value="">
+
+            {% if not has_brunch %}
+                {% for meal_type in ['breakfast', 'lunch', 'dinner'] if foods[meal_type] %}
+                    {{ render_meal(meal_type, foods[meal_type], loop.first) }}
+                {% endfor %}
+            {% else %}
+                {% for meal_type in ['brunch', 'dinner'] if foods[meal_type] %}
+                    {{ render_meal(meal_type, foods[meal_type], loop.first) }}
+                {% endfor %}
+            {% endif %}
 
             <div class="text-center">
-                <button type="submit" name = "log-foods" class="btn btn-primary btn-lg">
+                <button type="submit" name="log-foods" class="btn btn-primary btn-lg">
                     Log Selected Foods
                 </button>
             </div>
         </form>
+        
     {% else %}
         <h1 class="mb-4 text-center">
             No Data Available
@@ -170,6 +190,29 @@
 
         [checkbox, quantity].forEach(el => {
             el.addEventListener('click', e => e.stopPropagation());
+        });
+    });
+
+    const tabs = document.querySelectorAll(".tab");
+    const meals = document.querySelectorAll(".meal");
+    const mealInput = document.getElementById("current-meal");
+
+    const activeMeal = document.querySelector(".meal.active");
+    if (activeMeal) {
+        mealInput.value = activeMeal.id;
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            meals.forEach(m => m.classList.remove("active"));
+
+            tab.classList.add("active");
+            const selectedMeal = document.getElementById(tab.dataset.meal);
+            selectedMeal.classList.add("active");
+            
+            // Update hidden input with current meal
+            mealInput.value = tab.dataset.meal;
         });
     });
 </script>

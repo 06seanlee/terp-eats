@@ -55,8 +55,6 @@ def get_foods_by_meal(meal_type, date, dining_hall):
     return grouped
 
 
-
-
 # user logic
 def create_user(username, email, password):
     query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
@@ -371,3 +369,19 @@ def validate_password_strength(password):
     if re.fullmatch(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#%^&*_@$])[A-Za-z\d!#%^&*_@$]{8,}$", password):
         return True
     return False
+
+# find if dining hall menu is a 3-count (breakfast, lunch, dinner) or a 2-count (brunch, dinner)
+# (returns True if 2-count, False if 3-count)
+def has_brunch(date):
+    query = "SELECT EXISTS(SELECT 1 FROM menus WHERE date = ? AND meal_type = ?)"
+
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (date, 'brunch'))
+
+        results = cursor.fetchone()
+        if results[0] == 1: # brunch found, meaning 2-count
+            return True
+        else:
+            return False
+

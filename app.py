@@ -73,13 +73,7 @@ def menu():
         date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
     else:
         date = session["date"]
-    
-    if not session.get("meal_type"):
-        meal = scraper.get_meal_type() # auto filled meal type (based on current)
-    else:
-        meal = session["meal_type"]
 
-    
 
     if request.method == "POST":
         # user wants to change menu
@@ -92,37 +86,47 @@ def menu():
             if new_date: # menu has entries from this date
                 date = database.format_date(new_date) # correct formatting for date
                 session["date"] = date
-
-            new_meal = request.form.get('meal-type')
-            if new_meal != "Placeholder":
-                meal = new_meal
-                session["meal_type"] = meal
             
             return redirect(url_for("menu"))
 
 
         selected_food_ids = request.form.getlist("food_id")
         if not selected_food_ids:
-            return render_template("menu.html", foods=None, meal=meal, date=date)
+            return render_template("menu.html", foods=None, date=date)
 
         for food_id in selected_food_ids:
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
 
             if session.get("user_id"):
+                meal = request.form.get('meal_type')
                 database.log_food(True, session.get("user_id"), food_id, quantity, current_date, meal) # log food using user id
             else:
+                meal = request.form.get('meal_type')
                 database.log_food(False, session.get("guest_id"), food_id, quantity, current_date, meal) # log food using guest id
 
         return redirect(url_for("dashboard"))
 
+    has_brunch = database.has_brunch(date)
 
-    foods_by_station = database.get_foods_by_meal(meal, date, dining_hall)
+    foods = {}
+    if has_brunch:
+        for meal in ['brunch', 'dinner']:
+            result = database.get_foods_by_meal(meal, date, dining_hall)
+            if result:
+                foods[meal] = result 
+        print("BRUNCH BRUNCH BRUNCH")
+    else:
+        for meal in ['breakfast', 'lunch', 'dinner']:
+            result = database.get_foods_by_meal(meal, date, dining_hall)
+            if result:
+                foods[meal] = result 
+        print("NOT BRUNCH NOT BRUNCH")
 
     return render_template(
         "menu.html",
-        foods=foods_by_station,
-        meal=meal,
-        date=date
+        foods=foods,
+        date=date,
+        has_brunch=has_brunch
     )
 
 @app.route('/dashboard')
