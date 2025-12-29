@@ -38,9 +38,14 @@ Hello, this is TerpEats, a (currently incomplete) project made by a University o
    ```bash
     pip install -r requirements.txt
 
-4. Run the application:
-    ```bash
-    python app.py
+4. Create a .env file and create a variable:
+   ```bash
+    FLASK_SECRET_KEY = 'your-secret-key'
 
-5. Open your browser and go to:
-    http://127.0.0.1:5000
+5. Run the application:
+   ```bash
+   python app.py
+
+6. Open your browser and go to:
+   ```bash
+   http://127.0.0.1:5000
