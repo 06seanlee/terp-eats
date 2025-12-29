@@ -30,7 +30,7 @@ def login():
         if is_valid_account:
             user_id = database.get_user_by_username(username)[0]
             session['user_id'] = user_id
-            return redirect(url_for('select_dining_hall')) # CHANGE TO MENU WHEN SELECT_DINING_HALL IS REMOVED
+            return redirect(url_for('menu'))
         return render_template('login.html', attempted=True)
     
     return render_template('login.html')
@@ -48,7 +48,7 @@ def register():
         user_id = database.create_user(username, email, password)
         if user_id:
             session['user_id'] = user_id
-            return redirect(url_for('select_dining_hall')) # CHANGE TO MENU WHEN SELECT_DINING_HALL IS REMOVED
+            return redirect(url_for('menu'))
         else:
             return render_template('register.html', attempted=True)
         
@@ -60,24 +60,14 @@ def continue_as_guest():
         session["guest_id"] = str(uuid.uuid4())
     if session.get("dining_hall"):
         return redirect(url_for("menu"))
-    return redirect(url_for("select_dining_hall"))  
-
-@app.route("/select_dining_hall", methods=["GET", "POST"])
-def select_dining_hall():
-    if request.method == "POST":
-        dining_hall = request.form.get("dining_hall")
-
-        if not dining_hall:
-            return redirect(url_for("select_dining_hall"))
-
-        session["dining_hall"] = dining_hall
-        
-        return redirect(url_for("menu"))
-    return render_template("select_dining_hall.html")
+    return redirect(url_for("menu"))  
 
 @app.route("/menu", methods=["GET", "POST"])
 def menu():
     dining_hall = session.get("dining_hall")
+    if not dining_hall:
+        session["dining_hall"] = "South Campus" # default to south campus dining hall
+
     current_date = scraper.get_formatted_date() # used for logging, DON'T CHANGE
     if not session.get("date"):
         date = scraper.get_formatted_date() # auto filled date used for displaying (based on current)
@@ -89,8 +79,7 @@ def menu():
     else:
         meal = session["meal_type"]
 
-    if not dining_hall:
-        return redirect(url_for("select_dining_hall"))
+    
 
     if request.method == "POST":
         # user wants to change menu
