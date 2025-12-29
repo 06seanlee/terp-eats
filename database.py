@@ -195,6 +195,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
             f.carbs * l.servings AS total_carbs,
             f.fat * l.servings AS total_fat,
             l.meal_type,
+            f.serving_size,
             l.id
         FROM food_logs l
         JOIN foods f ON l.food_id = f.id
@@ -211,6 +212,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
             f.carbs * l.servings AS total_carbs,
             f.fat * l.servings AS total_fat,
             l.meal_type,
+            f.serving_size,
             l.id
         FROM food_logs l
         JOIN foods f ON l.food_id = f.id
@@ -229,7 +231,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
     foods = []
     total_cals = total_protein = total_carbs = total_fat = 0
 
-    for name, servings, calories, protein, carbs, fat, meal, log_id in rows:
+    for name, servings, calories, protein, carbs, fat, meal, serving_size, log_id in rows:
         calories = round(calories, 1)
         protein = round(protein, 1)
         carbs = round(carbs, 1)
@@ -243,6 +245,7 @@ def get_daily_macros(is_user, user_id, date, return_foods=True):
             "carbs": carbs,
             "fat": fat,
             "meal": meal,
+            "serving_size": serving_size,
             "log_id": log_id
         })
         
