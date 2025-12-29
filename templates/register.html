@@ -43,10 +43,16 @@
                  class="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                  required>
         </div>
+        {% if bad_password %}
+          <a class="block text-sm font-medium text-red-900 mb-1">Password must be min. 8 characters, include upper case, lower case, and a special symbol.</a>
+        {% endif %}
         <button type="submit"
                 class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-md font-medium transition">
           Register
         </button>
+        {% if attempted %}
+          <a class="block text-sm font-medium text-red-900 mb-1">Username or Email already taken</a>
+        {% endif %}
       </form>
       <p class="mt-4 text-sm text-center text-gray-300">
         Already have an account?

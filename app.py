@@ -30,8 +30,8 @@ def login():
         if is_valid_account:
             user_id = database.get_user_by_username(username)[0]
             session['user_id'] = user_id
-            return redirect(url_for('select_dining_hall'))
-        return render_template('login.html', is_valid_account=is_valid_account, attempted=True)
+            return redirect(url_for('select_dining_hall')) # CHANGE TO MENU WHEN SELECT_DINING_HALL IS REMOVED
+        return render_template('login.html', attempted=True)
     
     return render_template('login.html')
 
@@ -40,16 +40,17 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
-        plain_password = request.form['password']
-        hashed_password = generate_password_hash(plain_password)
+        password = request.form['password']
 
-        user_id = scraper.add_user(username, email, hashed_password)
+        if not database.validate_password_strength(password):
+            return render_template('register.html', bad_password=True)
+
+        user_id = database.create_user(username, email, password)
         if user_id:
             session['user_id'] = user_id
-            session['new_user'] = True  # Flag this session as a new user
-            return redirect(url_for('set_goals'))
+            return redirect(url_for('select_dining_hall')) # CHANGE TO MENU WHEN SELECT_DINING_HALL IS REMOVED
         else:
-            return redirect(url_for('register'))
+            return render_template('register.html', attempted=True)
         
     return render_template('register.html')
 

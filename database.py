@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
+from email_validator import validate_email, EmailNotValidError
+import re
 
 # database.py used for querying database and updating logs/goals/users
 
@@ -58,6 +60,13 @@ def get_foods_by_meal(meal_type, date, dining_hall):
 # user logic
 def create_user(username, email, password):
     query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+
+    try:
+        emailinfo = validate_email(email)
+        email = emailinfo.normalized
+    except EmailNotValidError as err:
+        print(f"Invalid Email: {err}")
+        return None
 
     try:
         with sqlite3.connect("macro_tracker.db") as conn:
@@ -354,6 +363,8 @@ def valid_date(date):
             return True
         else:
             return False
-    
-# from database import valid_date
-# valid_date("2025-12-19")
+        
+def validate_password_strength(password):
+    if re.fullmatch(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#%^&*_@$])[A-Za-z\d!#%^&*_@$]{8,}$", password):
+        return True
+    return False

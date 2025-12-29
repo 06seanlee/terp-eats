@@ -37,7 +37,7 @@
                  class="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                  required>
         </div>
-        {% if attempted and not is_valid_account %}
+        {% if attempted %}
           <a class="block text-sm font-medium text-red-900 mb-1">Incorrect login information</a>
         {% endif %}
         <button type="submit"
