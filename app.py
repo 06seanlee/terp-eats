@@ -17,7 +17,6 @@ if not app.secret_key:
 
 @app.route('/')
 def home():
-    session.clear() # clears all stored 
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
@@ -276,10 +275,10 @@ def modify_log():
 
 #     return redirect(url_for('view_logs'))
 
-# @app.route('/logout')
-# def logout():
-#     session.clear()
-#     return redirect(url_for('home'))
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(debug=True)
