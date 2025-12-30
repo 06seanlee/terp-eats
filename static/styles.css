@@ -1,0 +1,352 @@
+:root {
+    --primary-red: #E21833;
+    --pastel-red: #FFD4D4;
+    --accent-yellow: #FFF4DC;
+    --accent-yellow-hover: #FFE9B8;
+    --dark-gray: #1a1a1a;
+    --medium-gray: #4a4a4a;
+    --light-gray: #f5f5f5;
+    --border-gray: #e0e0e0;
+    --white: #ffffff;
+}
+
+body {
+    background: var(--light-gray);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--dark-gray);
+    padding-bottom: 80px;
+}
+
+.navbar {
+    background: var(--white) !important;
+    border-bottom: 1px solid var(--border-gray);
+    padding: 0.75rem 0;
+}
+
+.navbar-brand {
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    color: var(--dark-gray) !important;
+    letter-spacing: -0.5px;
+}
+
+.nav-btn {
+    width: 120px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--medium-gray) !important;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.nav-btn:hover {
+    background: var(--light-gray);
+    color: var(--dark-gray) !important;
+}
+
+.nav-btn.logout {
+    color: var(--primary-red) !important;
+    border-color: var(--primary-red);
+}
+
+.nav-btn.logout:hover {
+    background: var(--primary-red);
+    color: var(--white) !important;
+}
+
+.card {
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.food-card {
+    cursor: pointer;
+    border: 1.5px solid var(--border-gray);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    background: var(--white);
+}
+
+.food-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--medium-gray);
+}
+
+.food-card.active {
+    border-color: var(--primary-red);
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 3px rgba(226, 24, 51, 0.1);
+}
+
+.quantity-input {
+    display: none;
+    margin-top: 0.75rem;
+}
+
+.meal-tab {
+    width: 140px;
+    height: 44px;
+    background: none;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--medium-gray);
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.meal-tab:hover {
+    color: var(--dark-gray);
+}
+
+.meal-tab.active {
+    color: var(--dark-gray);
+}
+
+.meal-tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-red);
+    border-radius: 2px;
+}
+
+.meal {
+    display: none;
+}
+
+.meal.active {
+    display: block;
+}
+
+.card-header {
+    background-color: var(--dark-gray) !important;
+    color: var(--white) !important;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.macro-badge {
+    background: var(--light-gray) !important;
+    color: var(--dark-gray) !important;
+    font-weight: 500;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    min-width: 95px;
+    text-align: center;
+}
+
+.macro-badge.calories {
+    background: var(--pastel-red) !important;
+    color: var(--dark-gray) !important;
+}
+
+.btn-primary {
+    position: fixed; /* Changed button to fixed positioning matching dashboard layout */
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 1320px; /* Container max-width */
+    width: calc(100% - 3rem); /* Account for container padding */
+    background-color: var(--accent-yellow);
+    border: 2px solid var(--accent-yellow);
+    color: var(--dark-gray);
+    font-weight: 600;
+    padding: 1rem 3rem;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-yellow-hover);
+    border-color: var(--accent-yellow-hover);
+    color: var(--dark-gray);
+    box-shadow: 0 -4px 12px rgba(255, 228, 184, 0.5);
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+    background-color: var(--accent-yellow-hover) !important;
+    border-color: var(--accent-yellow-hover) !important;
+    color: var(--dark-gray) !important;
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    border: 2px solid var(--accent-yellow);
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: var(--dark-gray);
+}
+
+.form-select, .form-control {
+    border-color: var(--border-gray);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(226, 24, 51, 0.1);
+}
+
+h2 {
+    font-weight: 700;
+    color: var(--dark-gray);
+}
+
+.text-muted {
+    color: var(--medium-gray) !important;
+}
+
+.sticky-bottom {
+    display: none; /* Removed sticky-bottom class as button is now fixed */
+}
+
+/* Updated date picker styles for Flatpickr */
+.date-picker-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.custom-date-input {
+    position: relative;
+    width: 160px;
+}
+
+.custom-date-input input[type="text"] {
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    padding-right: 2.5rem;
+    border: 1.5px solid var(--border-gray);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--white);
+}
+
+.custom-date-input input[type="text"]:hover {
+    border-color: var(--primary-red);
+}
+
+/* Flatpickr custom styles */
+.flatpickr-calendar {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-gray);
+}
+
+.flatpickr-months {
+    border-radius: 12px 12px 0 0;
+}
+
+.flatpickr-current-month {
+    font-weight: 600;
+}
+
+.flatpickr-day.selected {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.flatpickr-day.today {
+    border-color: var(--primary-red);
+}
+
+.flatpickr-day:hover {
+    background: #fff5f5;
+    border-color: var(--primary-red);
+}
+.macro-badge.protein {
+    background-color: var(--pastel-blue) !important;
+    color: var(--dark-gray) !important;
+}
+
+.macro-badge.carbs {
+    background-color: var(--pastel-green) !important;
+    color: var(--dark-gray) !important;
+}
+
+.macro-badge.fat {
+    background-color: var(--pastel-orange) !important;
+    color: var(--dark-gray) !important;
+}
+.badge.bg-primary {
+    background-color: var(--primary-red) !important;
+}
+.food-logs {
+    text-decoration: none;
+}
+h1, h3, h5 {
+    color: var(--dark-gray);
+    font-weight: 700;
+}
+
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+.form-control.quantity-input {
+    max-width: 100px;
+    margin: 0 auto;
+    border-color: var(--border-gray);
+    border-radius: 8px;
+}
+
+.form-control.quantity-input:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(226, 24, 51, 0.1);
+}
+.btn-success {
+    background-color: transparent;
+    border: 2px solid var(--accent-yellow);
+    color: var(--dark-gray);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+    background-color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: var(--dark-gray);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 228, 184, 0.5);
+}
+
+.btn-outline-danger {
+    color: var(--primary-red);
+    border-color: var(--primary-red);
+    font-weight: 500;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+    color: var(--white);
+}
