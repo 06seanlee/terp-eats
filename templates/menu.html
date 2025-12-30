@@ -2,131 +2,398 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Menu</title>
+    <title>Menu - TerpEats</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Added Flatpickr CSS for modern date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <style>
+        :root {
+            --primary-red: #E21833;
+            --pastel-red: #FFD4D4;
+            --accent-yellow: #FFF4DC;
+            --accent-yellow-hover: #FFE9B8;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #4a4a4a;
+            --light-gray: #f5f5f5;
+            --border-gray: #e0e0e0;
+            --white: #ffffff;
+        }
+
         body {
-            background: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .food-card {
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: border-color 0.2s, background-color 0.2s;
-        }
-        .food-card.active {
-            border-color: #0d6efd;
-            background-color: #e7f1ff;
-        }
-        .quantity-input {
-            display: none;
-        }
-        nav ul {
-            list-style-type: none; /* Removes the bullet points */
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #333; /* Dark background color */
-            display: flex; /* Aligns list items horizontally */
+            background: var(--light-gray);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--dark-gray);
+            padding-bottom: 80px;
         }
 
-        /* Style the list items */
-        nav li {
-            float: left; /* Alternative to flex for horizontal layout */
+        .navbar {
+            background: var(--white) !important;
+            border-bottom: 1px solid var(--border-gray);
+            padding: 0.75rem 0;
         }
 
-        /* Style the links */
-        nav li a {
-            display: block; /* Makes the entire area clickable */
-            color: white;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none; /* Removes the default underline from links */
+        .navbar-brand {
+            font-weight: 800 !important;
+            font-size: 1.5rem !important;
+            color: var(--dark-gray) !important;
+            letter-spacing: -0.5px;
         }
 
-        /* Change the color of links on hover */
-        nav li a:hover {
-            background-color: #111;
+        .nav-btn {
+            width: 120px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--medium-gray) !important;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            transition: all 0.2s ease;
             text-decoration: none;
         }
-        .tab {
+
+        .nav-btn:hover {
+            background: var(--light-gray);
+            color: var(--dark-gray) !important;
+        }
+
+        .nav-btn.logout {
+            color: var(--primary-red) !important;
+            border-color: var(--primary-red);
+        }
+
+        .nav-btn.logout:hover {
+            background: var(--primary-red);
+            color: var(--white) !important;
+        }
+
+        .card {
+            border: 1px solid var(--border-gray);
+            border-radius: 12px;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .food-card {
+            cursor: pointer;
+            border: 1.5px solid var(--border-gray);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+
+        .food-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: var(--medium-gray);
+        }
+
+        .food-card.active {
+            border-color: var(--primary-red);
+            background-color: #fff5f5;
+            box-shadow: 0 0 0 3px rgba(226, 24, 51, 0.1);
+        }
+
+        .quantity-input {
+            display: none;
+            margin-top: 0.75rem;
+        }
+
+        .meal-tab {
+            width: 140px;
+            height: 44px;
             background: none;
             border: none;
-            padding: 10px 16px;
-            cursor: pointer;
-            font: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--medium-gray);
+            position: relative;
+            transition: color 0.2s ease;
         }
-        .tab.active {
-            color: red;
+
+        .meal-tab:hover {
+            color: var(--dark-gray);
         }
+
+        .meal-tab.active {
+            color: var(--dark-gray);
+        }
+
+        .meal-tab.active::after {
+            content: "";
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-red);
+            border-radius: 2px;
+        }
+
         .meal {
             display: none;
         }
+
         .meal.active {
             display: block;
+        }
+
+        .card-header {
+            background-color: var(--dark-gray) !important;
+            color: var(--white) !important;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .macro-badge {
+            background: var(--light-gray) !important;
+            color: var(--dark-gray) !important;
+            font-weight: 500;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            min-width: 95px;
+            text-align: center;
+        }
+
+        .macro-badge.calories {
+            background: var(--pastel-red) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .btn-primary {
+            position: fixed; /* Changed button to fixed positioning matching dashboard layout */
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 1320px; /* Container max-width */
+            width: calc(100% - 3rem); /* Account for container padding */
+            background-color: var(--accent-yellow);
+            border: 2px solid var(--accent-yellow);
+            color: var(--dark-gray);
+            font-weight: 600;
+            padding: 1rem 3rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s ease;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-yellow-hover);
+            border-color: var(--accent-yellow-hover);
+            color: var(--dark-gray);
+            box-shadow: 0 -4px 12px rgba(255, 228, 184, 0.5);
+        }
+
+        .btn-primary:active,
+        .btn-primary:focus {
+            background-color: var(--accent-yellow-hover) !important;
+            border-color: var(--accent-yellow-hover) !important;
+            color: var(--dark-gray) !important;
+        }
+
+        .btn-outline-primary {
+            background-color: transparent;
+            border: 2px solid var(--accent-yellow);
+            color: var(--dark-gray);
+            font-weight: 500;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            color: var(--dark-gray);
+        }
+
+        .form-select, .form-control {
+            border-color: var(--border-gray);
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.9rem;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(226, 24, 51, 0.1);
+        }
+
+        h2 {
+            font-weight: 700;
+            color: var(--dark-gray);
+        }
+
+        .text-muted {
+            color: var(--medium-gray) !important;
+        }
+
+        .sticky-bottom {
+            display: none; /* Removed sticky-bottom class as button is now fixed */
+        }
+
+        /* Updated date picker styles for Flatpickr */
+        .date-picker-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .custom-date-input {
+            position: relative;
+            width: 160px;
+        }
+
+        .custom-date-input input[type="text"] {
+            width: 100%;
+            padding: 0.6rem 0.9rem;
+            padding-right: 2.5rem;
+            border: 1.5px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+
+        .custom-date-input input[type="text"]:hover {
+            border-color: var(--primary-red);
+        }
+
+        /* Flatpickr custom styles */
+        .flatpickr-calendar {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-gray);
+        }
+
+        .flatpickr-months {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .flatpickr-current-month {
+            font-weight: 600;
+        }
+
+        .flatpickr-day.selected {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+
+        .flatpickr-day.today {
+            border-color: var(--primary-red);
+        }
+
+        .flatpickr-day:hover {
+            background: #fff5f5;
+            border-color: var(--primary-red);
         }
     </style>
 </head>
 
 <body>
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('dashboard')}}">Dashboard</a></li>
-            <li><a href="{{ url_for('view_logs')}}">View Logs</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                TerpEats
+            </a>
+
+            <ul class="navbar-nav ms-auto d-flex flex-row gap-2">
+                <li class="nav-item">
+                    <a class="nav-btn" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-btn" href="{{ url_for('view_logs') }}">View Logs</a>
+                </li>
+                {% if session.get('user_id') %}
+                    <li class="nav-item">
+                        <a class="nav-btn logout" href="{{ url_for('logout') }}">Log Out</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-btn" href="{{ url_for('login') }}">Sign In</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
     </nav>
+
 <div class="container py-5">
 
-    <h1 class="mb-4 text-center">
-        Menu - {{ session["dining_hall"] }} on {{ date }}
-    </h1>
-    <form method="POST">
-        <label for="dining-hall">Change dining hall:</label>
-        <select name="dining-hall">
-            <option value="Placeholder">--Select--</option>
-            <option value="South Campus">South</option>
-            <option value="Yahentamitsi Dining Hall">Yahentamitsi</option>
-            <option value="251 North">251 North</option>
-        </select>
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            
+            <div>
+                <h2 class="fw-bold mb-1">
+                {{ session["dining_hall"] }}
+                </h2>
+                <p class="text-muted mb-0">
+                Menu for {{ date }}
+                </p>
+            </div>
 
-        <label for="date">Change date:</label>
-        <input type="date" name="date">
-        
-        <div class="text-center">
-            <button type="submit" name="change-menu" value="change-menu" class="btn btn-primary btn-lg">
-                Change Menu
-            </button>
+            <form method="POST" class="d-flex gap-2 flex-wrap">
+                <select name="dining-hall" class="form-select">
+                <option value="South Campus" {% if session['dining_hall'] == 'South Campus' %}selected{% endif %}>South</option>
+                <option value="Yahentamitsi Dining Hall" {% if session['dining_hall'] == 'Yahentamitsi Dining Hall' %}selected{% endif %}>Yahentamitsi</option>
+                <option value="251 North" {% if session['dining_hall'] == '251 North' %}selected{% endif %}>251 North</option>
+                </select>
+
+                <!-- Updated to use Flatpickr for modern date picker -->
+                <div class="date-picker-wrapper">
+                    <div class="custom-date-input">
+                        <input type="text" name="date" id="date-input" class="form-control" placeholder="Select date">
+                    </div>
+                </div>
+
+                <button type="submit" name="change-menu" value="change-menu"
+                        class="btn btn-outline-primary">
+                Update
+                </button>
+            </form>
+
+            </div>
         </div>
-    </form>
-    <hr>
+        </div>
     {% if foods %}
         {% macro render_meal(meal_name, meal_foods, is_first=False) %}
             <div class="meal {% if is_first %}active{% endif %}" id="{{ meal_name }}">
                 {% for station, station_foods in meal_foods.items() %} 
                     <div class="card mb-4">
-                        <div class="card-header bg-secondary text-white">
+                        <div class="card-header">
                             <h4 class="mb-0">{{ station }}</h4>
                         </div>
                         <div class="card-body">
                             <div class="row g-3">
                                 {% for food in station_foods %}
                                     <div class="col-md-6">
-                                        <div class="p-3 border rounded food-card">
+                                        <div class="p-3 food-card">
                                             <input type="checkbox" name="food_id" value="{{ food.id }}" 
                                                 id="food_{{ food.id }}" class="d-none">
-                                            <label for="food_{{ food.id }}" class="fw-bold mb-1">
+                                            <label for="food_{{ food.id }}" class="fw-bold mb-1" style="cursor: pointer;">
                                                 {{ food.name }}
                                             </label>
-                                            <a>| {{ food.serving_size }}</a>
-                                            <div class="small text-muted mb-2">
-                                                Protein: {{ food.protein }}g | Carbs: {{ food.carbs }}g | 
-                                                Fat: {{ food.fat }}g | Calories: {{ food.calories }}
+                                            <span class="text-muted"> | {{ food.serving_size }}</span>
+                                            <div class="d-flex flex-wrap gap-2 mt-2 mb-2">
+                                                <span class="macro-badge calories">{{ food.calories }} cal</span>
+                                                <span class="macro-badge">Protein {{ food.protein }}g</span>
+                                                <span class="macro-badge">Carbs {{ food.carbs }}g</span>
+                                                <span class="macro-badge">Fat {{ food.fat }}g</span>
+                                                
                                             </div>
                                             <input type="number" name="quantity_{{ food.id }}" 
-                                                class="form-control quantity-input" min="1" value="1">
+                                                class="form-control quantity-input" min="1" value="1" placeholder="Quantity">
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -137,18 +404,18 @@
             </div>
         {% endmacro %}
 
-        {% if has_brunch %}
-            <div class="tabs">
-                <button class="tab active" data-meal="brunch">Brunch</button>
-                <button class="tab" data-meal="dinner">Dinner</button>
-            </div>
-        {% else %}
-            <div class="tabs">
-                <button class="tab active" data-meal="breakfast">Breakfast</button>
-                <button class="tab" data-meal="lunch">Lunch</button>
-                <button class="tab" data-meal="dinner">Dinner</button>
-            </div>
-        {% endif %}
+        <div class="d-flex justify-content-center gap-4 mb-4">
+            {% if has_brunch %}
+                <button class="meal-tab active" data-meal="brunch">Brunch</button>
+                <button class="meal-tab" data-meal="dinner">Dinner</button>
+            {% else %}
+                {% for meal in ['breakfast', 'lunch', 'dinner'] %}
+                <button class="meal-tab {% if loop.first %}active{% endif %}" data-meal="{{ meal }}">
+                    {{ meal.capitalize() }}
+                </button>
+                {% endfor %}
+            {% endif %}
+        </div>
 
         <form method="POST">
             <input type="hidden" name="meal_type" id="current-meal" value="">
@@ -163,7 +430,7 @@
                 {% endfor %}
             {% endif %}
 
-            <div class="text-center">
+            <div class="text-center py-3">
                 <button type="submit" name="log-foods" class="btn btn-primary btn-lg">
                     Log Selected Foods
                 </button>
@@ -171,13 +438,25 @@
         </form>
         
     {% else %}
-        <h1 class="mb-4 text-center">
-            No Data Available
-        </h1>
+        <div class="text-center py-5">
+            <h3 class="text-muted">No Data Available</h3>
+            <p class="text-muted">Please select a dining hall and date.</p>
+        </div>
     {% endif %}
 </div>
 
+<!-- Added Flatpickr JavaScript library -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+    flatpickr("#date-input", {
+        dateFormat: "m-d-Y",
+        defaultDate: "{{ date }}",
+        maxDate: new Date().fp_incr(14), // 2 weeks from today
+        disableMobile: true, 
+        allowInput: false,
+        theme: "light"
+    });
+
     document.querySelectorAll('.food-card').forEach(card => {
         const checkbox = card.querySelector('input[type="checkbox"]');
         const quantity = card.querySelector('.quantity-input');
@@ -193,7 +472,7 @@
         });
     });
 
-    const tabs = document.querySelectorAll(".tab");
+    const tabs = document.querySelectorAll(".meal-tab");
     const meals = document.querySelectorAll(".meal");
     const mealInput = document.getElementById("current-meal");
 
@@ -210,8 +489,7 @@
             tab.classList.add("active");
             const selectedMeal = document.getElementById(tab.dataset.meal);
             selectedMeal.classList.add("active");
-            
-            // Update hidden input with current meal
+                
             mealInput.value = tab.dataset.meal;
         });
     });

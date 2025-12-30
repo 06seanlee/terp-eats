@@ -346,7 +346,7 @@ def update_log(log_id, servings):
         conn.commit()
 
 def format_date(date):
-    format_pattern = "%Y-%m-%d"
+    format_pattern = "%m-%d-%Y"
     date_object = datetime.strptime(date, format_pattern)
     formatted_date = f"{date_object.month}/{date_object.day}/{date_object.year}"
     return formatted_date
@@ -366,7 +366,7 @@ def valid_date(date):
             return False
         
 def validate_password_strength(password):
-    if re.fullmatch(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!#%^&*_@$])[A-Za-z\d!#%^&*_@$]{8,}$", password):
+    if re.fullmatch(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{9,}$", password):
         return True
     return False
 

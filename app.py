@@ -17,7 +17,7 @@ if not app.secret_key:
 
 @app.route('/')
 def home():
-    session.clear() # clears all stored 
+    session.clear()
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
@@ -91,8 +91,7 @@ def menu():
 
 
         selected_food_ids = request.form.getlist("food_id")
-        if not selected_food_ids:
-            return render_template("menu.html", foods=None, date=date)
+
 
         for food_id in selected_food_ids:
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
@@ -276,10 +275,10 @@ def modify_log():
 
 #     return redirect(url_for('view_logs'))
 
-# @app.route('/logout')
-# def logout():
-#     session.clear()
-#     return redirect(url_for('home'))
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(debug=True)
