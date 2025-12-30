@@ -17,6 +17,7 @@ if not app.secret_key:
 
 @app.route('/')
 def home():
+    session.clear()
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
