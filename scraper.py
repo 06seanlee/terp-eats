@@ -398,4 +398,4 @@ def run_scraper(date_str=None):
 
 if __name__ == "__main__":
     create_tables()
-    run_scraper("12/24/2025")
+    run_scraper("12/18/2025")
