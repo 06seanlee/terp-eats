@@ -3,7 +3,7 @@
 Hello, this is TerpEats, a (currently incomplete) project made by a University of Maryland student trying to track macros at UMD dining halls. This is made in mind for all students at UMD who are trying to track calories and macros, whether for bulking, fighting the Freshman 15, or for the curious. TerpEats allows users to browse what foods are currently available at the dining hall (based on data from nutrition.umd.edu), log foods onto their account from all 3 UMD dining halls, and track how much they ate (calories, protein, carbs, fat). 
 
 ## Demo
-[![Watch Demo](images/terp_eats_thumbnail.png)](https://youtu.be/pOZzLdyp1IY)
+[![Watch Demo]](https://youtu.be/pOZzLdyp1IY)
 
 ## Features
 - Daily scraping for up-to-date menus and specific food information
