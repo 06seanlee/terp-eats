@@ -1,14 +1,20 @@
 # TerpEats
 
-Hello, this is TerpEats, a (currently incomplete) project made by a University of Maryland student trying to track macros at UMD dining halls. This is made in mind for all students at UMD who are trying to track calories and macros, whether for bulking, fighting the Freshman 15, or for the curious. TerpEats allows users to browse what foods are currently available at the dining hall (based on data from nutrition.umd.edu), log foods onto their account from all 3 UMD dining halls, and track how much they ate (calories, protein, carbs, fat). 
+
+## Overview
+Hello, this is TerpEats, a (currently incomplete) project made by a University of Maryland student trying to watch what they're eating at the dining halls...
+
+This is made in mind for all students at UMD who are trying to track calories, macros, and meals at all 3 of UMD's dining halls, whether for bulking, fighting the Freshman 15, or for anyone curious about what they're putting in their body.
 
 ## Demo
-[![Watch Demo]](https://youtu.be/pOZzLdyp1IY)
+Click below to see a (work in progress) demo!
+
+[![Watch Demo](images/terp_eats_thumbnail.png)](https://youtu.be/pOZzLdyp1IY)
 
 ## Features
-- Daily scraping for up-to-date menus and specific food information
+- Daily scraping for up-to-date menus and specific food information from all 3 dining halls
 - User-friendly web interface (inspired by nutrition.umd.edu layout)
-- User login and authentication w/ calorie goals and progress checks
+- User login and authentication w/ food logging, macro goals, and progress checks
 
 ## Tech Stack
 - **Frontend:** HTML, CSS, JavaScript
@@ -23,6 +29,8 @@ Hello, this is TerpEats, a (currently incomplete) project made by a University o
 - Automatic webscraping script
 - Deploy publicly!
 - Food recommendation logic
+- Increased scraping efficiency
+- Allergens/Restrictions Labels
 
 ## Setup / Installation
 
@@ -32,7 +40,7 @@ Hello, this is TerpEats, a (currently incomplete) project made by a University o
 
 2. Navigate into the project directory:
    ```bash
-    cd terpeats
+    cd terp_eats
 
 3. Install dependencies:
    ```bash
