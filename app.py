@@ -89,18 +89,16 @@ def menu():
             
             return redirect(url_for("menu"))
 
-
         selected_food_ids = request.form.getlist("food_id")
-
 
         for food_id in selected_food_ids:
             quantity = int(request.form.get(f"quantity_{food_id}", 1))
+            menu_id = request.form.get(f"menu_id_{food_id}")
+            meal = database.get_food_meal_by_id(menu_id)
 
             if session.get("user_id"):
-                meal = request.form.get('meal_type')
                 database.log_food(True, session.get("user_id"), food_id, quantity, current_date, meal) # log food using user id
             else:
-                meal = request.form.get('meal_type')
                 database.log_food(False, session.get("guest_id"), food_id, quantity, current_date, meal) # log food using guest id
 
         return redirect(url_for("dashboard"))
@@ -113,13 +111,11 @@ def menu():
             result = database.get_foods_by_meal(meal, date, dining_hall)
             if result:
                 foods[meal] = result 
-        print("BRUNCH BRUNCH BRUNCH")
     else:
         for meal in ['breakfast', 'lunch', 'dinner']:
             result = database.get_foods_by_meal(meal, date, dining_hall)
             if result:
                 foods[meal] = result 
-        print("NOT BRUNCH NOT BRUNCH")
 
     return render_template(
         "menu.html",

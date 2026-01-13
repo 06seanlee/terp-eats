@@ -91,6 +91,7 @@
                                 {% for food in station_foods %}
                                     <div class="col-md-6">
                                         <div class="p-3 food-card">
+                                            <input type="hidden" name="menu_id_{{ food.id }}" value="{{ food.menu_id }}">
                                             <input type="checkbox" name="food_id" value="{{ food.id }}" 
                                                 id="food_{{ food.id }}" class="d-none">
                                             <label for="food_{{ food.id }}" class="fw-bold mb-1" style="cursor: pointer;">

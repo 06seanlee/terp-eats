@@ -12,6 +12,13 @@ def get_food_name_by_id(food_id):
         cursor.execute("SELECT name FROM foods WHERE id = ?", (food_id,))
         result = cursor.fetchone()
         return result[0] if result else None
+    
+def get_food_meal_by_id(menu_id):
+    with sqlite3.connect("macro_tracker.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT meal_type FROM menus WHERE id = ?", (menu_id,))
+        result = cursor.fetchone()
+        return result[0] if result else None
 
 def get_foods_by_meal(meal_type, date, dining_hall):
     query = """
@@ -23,7 +30,8 @@ def get_foods_by_meal(meal_type, date, dining_hall):
             f.protein,
             f.carbs,
             f.fat,
-            f.calories
+            f.calories,
+            m.id
         FROM menus m
         JOIN foods f ON m.food_id = f.id
         WHERE m.meal_type = ?
@@ -38,7 +46,7 @@ def get_foods_by_meal(meal_type, date, dining_hall):
         results = cursor.fetchall()
 
     grouped = {}
-    for food_id, name, serving_size, station, protein, carbs, fat, calories in results:
+    for food_id, name, serving_size, station, protein, carbs, fat, calories, menu_id in results:
         if station not in grouped:
             grouped[station] = []
 
@@ -49,7 +57,8 @@ def get_foods_by_meal(meal_type, date, dining_hall):
             "protein": protein,
             "carbs": carbs,
             "fat": fat,
-            "calories": calories
+            "calories": calories,
+            "menu_id": menu_id
         })
 
     return grouped
@@ -385,3 +394,7 @@ def has_brunch(date):
         else:
             return False
 
+
+# def search_food(food_name, foods):
+#     for food in foods:
+#         if 
